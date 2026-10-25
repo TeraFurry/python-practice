@@ -52,7 +52,7 @@ A task is a single `.json` file. Load it with the button "Ещё" → "Доба�
 
 The book itself and a copy of the Python documentation are not included in this repository: they have their own copyrights and licenses, so please get them from the source.
 
-- Al Sweigart, *Automate the Boring Stuff with Python*, free online edition: <https://automatetheboringstuff.com/>. The sample tasks were written for the Russian edition (2nd edition) of the book.
+- Al Sweigart, *Automate the Boring Stuff with Python*, free online edition: <https://automatetheboringstuff.com/>. The sample tasks were written for the Russian edition (2nd edition, "Автоматизация рутинных задач с помощью Python", Dialektika). You can buy the Russian edition, for example, on [Ozon](https://www.ozon.ru/product/avtomatizatsiya-rutinnyh-zadach-s-pomoshchyu-python-prakticheskoe-rukovodstvo-dlya-nachinayushchih-2-340165807/).
 - Python documentation: <https://docs.python.org/3/>. The "Tutorial" section is the best start for beginners.
 
 ## License
