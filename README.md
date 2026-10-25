@@ -4,18 +4,18 @@
 
 A small desktop-style app for beginners who learn Python by solving hands-on tasks. It opens a window with the task text and a help panel, runs the learner's code, checks it and says "correct" or "incorrect". It never shows the ready answer. No internet is needed to use it.
 
-Three ready-made tasks (operators, strings, variables) follow Al Sweigart's book *Automate the Boring Stuff with Python*. You can add your own tasks as plain `.json` files (see [how to make tasks](docs/TASKS.en.md)).
+Three ready-made task sets (operators, strings, variables, each in Russian and in English) follow Al Sweigart's book *Automate the Boring Stuff with Python*. You can add your own tasks as plain `.json` files (see [how to make tasks](docs/TASKS.en.md)).
 
-> **Note:** the interface and the three sample tasks are in Russian. Tasks in other languages work too (the task text is just a string), but the buttons and messages of the app are Russian for now.
+**Two languages and two themes.** The app has an **RU / EN** switch and a **light / dark / auto** theme button at the bottom left. The switch changes the buttons, the messages of the checker and the list of tasks: each task set belongs to one language, and the three sample sets exist in both Russian and English.
 
-![App window](docs/img/screenshot.png)
+![App window, English](docs/img/screenshot-en.png)
 
 ## What is inside
 
 | Folder | Contents |
 |---|---|
 | `app/` | the program itself: `программа.py`, `интерфейс.html` and `build_exe.bat` (exe build) |
-| `Задания/` | task files in `.json` (three ready examples) |
+| `Задания/` | task files in `.json`: `Task_01-03.json` (English) and `Задание_01-03.json` (Russian) |
 | `docs/` | guides: how to load tasks and how to write them |
 | `.github/workflows/` | automatic `.exe` build on GitHub |
 
@@ -46,7 +46,7 @@ Each task gets `лог.txt` (every attempt), `прогресс.json` (what is so
 
 ## Your own tasks
 
-A task is a single `.json` file. Load it with the button "Ещё" → "Добавить задания из файла" (bottom left in the app window) or drop it into the `Задания` folder. If you are not a programmer, ask an AI assistant to write the file: the [guide](docs/TASKS.en.md) has a ready-to-use prompt and rules for writing good tasks. It also describes every field of the file for people who write tasks by hand.
+A task is a single `.json` file. Load it with the button More → "Add tasks from a file" (bottom left in the app window) or drop it into the `Задания` folder. The field `"lang": "en"` or `"lang": "ru"` in the file decides in which language mode the task set is shown (without it the set is shown in both). If you are not a programmer, ask an AI assistant to write the file: the [guide](docs/TASKS.en.md) has a ready-to-use prompt and rules for writing good tasks. It also describes every field of the file for people who write tasks by hand.
 
 ## Learning materials
 
@@ -69,14 +69,16 @@ No license has been chosen yet, so by default all rights are reserved by the aut
 
 Три готовых задания (операторы, строки, переменные) построены по книге Эла Свейгарта «Автоматизация рутинных задач с помощью Python». Свои задания добавляются обычным файлом `.json` (см. [как делать задания](docs/TASKS.ru.md)).
 
-![Окно программы](docs/img/screenshot.png)
+**Два языка и две темы.** Внизу слева в окне есть переключатель **RU / EN** и кнопка темы **светлая / тёмная / авто**. Переключатель меняет надписи, сообщения проверки и список заданий: каждое задание относится к одному языку, а три готовых задания есть и на русском, и на английском.
+
+![Окно программы, русский](docs/img/screenshot-ru.png)
 
 ## Что внутри
 
 | Папка | Что там |
 |---|---|
 | `app/` | сама программа: `программа.py`, `интерфейс.html` и `build_exe.bat` (сборка exe) |
-| `Задания/` | задания в виде `.json` (три готовых примера) |
+| `Задания/` | задания в виде `.json`: `Задание_01-03.json` (русские) и `Task_01-03.json` (английские) |
 | `docs/` | инструкции: как загружать и делать задания |
 | `.github/workflows/` | автоматическая сборка `.exe` на GitHub |
 
@@ -107,7 +109,7 @@ python app/программа.py
 
 ## Свои задания
 
-Задание это один файл `.json`. Загрузить его можно кнопкой «Ещё» → «Добавить задания из файла» (внизу слева в окне программы) или положить в папку `Задания`. Если вы не программист, попросите сделать файл у нейросети: в [инструкции](docs/TASKS.ru.md) есть готовый запрос и правила, как составлять хорошие задания. Там же описаны все поля файла для тех, кто хочет писать задания сам.
+Задание это один файл `.json`. Загрузить его можно кнопкой «Ещё» → «Добавить задания из файла» (внизу слева в окне программы) или положить в папку `Задания`. Поле `"lang": "ru"` или `"lang": "en"` в файле решает, на каком языке показывается задание (без него задание видно на обоих). Если вы не программист, попросите сделать файл у нейросети (в том числе на другом языке, например, английском): в [инструкции](docs/TASKS.ru.md) есть готовый запрос и правила, как составлять хорошие задания. Там же описаны все поля файла для тех, кто хочет писать задания сам.
 
 ## Материалы для учёбы
 

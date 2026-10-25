@@ -1,5 +1,5 @@
 <!doctype html>
-<html lang="ru">
+<html lang="ru" data-theme="auto">
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
@@ -16,8 +16,9 @@
     --d-kw: #c792ea; --d-str: #98c379; --d-num: #e5a05c; --d-op: #56b6c2; --d-fn: #61afef; --d-bi: #e5c07b; --d-cm: #7f848e;
     --label: #2f6f5e; --mark: #fff1b8; --mark-ink: #4a3b00; --chip: #e9e6dc;
   }
+  /* тема: «авто» следует за системой, «светлая» и «тёмная» выбираются кнопкой в левой колонке */
   @media (prefers-color-scheme: dark) {
-    :root {
+    :root:not([data-theme="light"]) {
       --bg: #15171a; --panel: #1e2124; --ink: #e8e6e1; --muted: #9aa0a6; --line: #30353a;
       --accent: #5fb39b; --accent-ink: #0f1a17; --accent-soft: #213630;
       --ok: #6fd3a0; --ok-bg: #1c3227; --bad: #ff8f7a; --bad-bg: #3a2420;
@@ -26,6 +27,15 @@
       --label: #7ed1b8; --mark: #4a3f12; --mark-ink: #ffe9a0; --chip: #2a2f33;
       --con-bg: #0e0f11; --con-ink: #e6e4df; --con-dim: #7d858d; --con-err: #ff8f7a; --con-line: #26292d;
     }
+  }
+  :root[data-theme="dark"] {
+    --bg: #15171a; --panel: #1e2124; --ink: #e8e6e1; --muted: #9aa0a6; --line: #30353a;
+    --accent: #5fb39b; --accent-ink: #0f1a17; --accent-soft: #213630;
+    --ok: #6fd3a0; --ok-bg: #1c3227; --bad: #ff8f7a; --bad-bg: #3a2420;
+    --editor-bg: #16181b; --gutter: #6b727a; --ready-bg: #202428;
+    --t-kw: #c792ea; --t-str: #98c379; --t-num: #e5a05c; --t-op: #56b6c2; --t-fn: #61afef; --t-bi: #e5c07b; --t-cm: #7f848e;
+    --label: #7ed1b8; --mark: #4a3f12; --mark-ink: #ffe9a0; --chip: #2a2f33;
+    --con-bg: #0e0f11; --con-ink: #e6e4df; --con-dim: #7d858d; --con-err: #ff8f7a; --con-line: #26292d;
   }
   * { box-sizing: border-box; }
   html, body { height: 100%; }
@@ -45,6 +55,12 @@
   #list .sub { display: block; font-size: 13px; color: var(--muted); }
   #list .done .sub { color: var(--ok); }
   #list .none { padding: 8px 12px; font-size: 13px; color: var(--muted); }
+  .tools { border-top: 1px solid var(--line); padding: 10px 12px; display: flex; gap: 8px; align-items: center; justify-content: space-between; flex-wrap: wrap; }
+  .seg { display: inline-flex; border: 1px solid var(--line); border-radius: 8px; overflow: hidden; }
+  .seg button { border: 0; background: transparent; color: var(--muted); padding: 5px 10px; cursor: pointer; font-size: 13px; font-weight: 600; }
+  .seg button[aria-pressed="true"] { background: var(--accent); color: var(--accent-ink); }
+  #theme { border: 1px solid var(--line); background: transparent; color: var(--muted); padding: 5px 10px; border-radius: 8px; cursor: pointer; font-size: 13px; }
+  #theme:hover, .seg button:hover { color: var(--ink); }
   .menu { border-top: 1px solid var(--line); padding: 8px 10px; }
   .menu summary { cursor: pointer; padding: 8px 12px; border-radius: 8px; color: var(--muted); font-size: 14px; list-style: none; }
   .menu summary::-webkit-details-marker { display: none; }
@@ -160,16 +176,22 @@
 <body>
 <div class="app">
   <aside>
-    <div class="brand">Практика Python<small>задания по темам</small></div>
+    <div class="brand"><span id="brand-name"></span><small id="brand-sub"></small></div>
     <nav id="list"></nav>
+    <div class="tools">
+      <div class="seg" role="group" aria-label="Language / Язык">
+        <button id="lang-ru" type="button">RU</button><button id="lang-en" type="button">EN</button>
+      </div>
+      <button id="theme" type="button"></button>
+    </div>
     <details class="menu">
-      <summary>Ещё</summary>
+      <summary id="m-more"></summary>
       <div class="items">
-        <button id="m-log">Открыть лог</button>
-        <button id="m-res">Открыть папку результатов</button>
-        <button id="m-reset">Начать задание заново</button>
-        <button id="m-refresh">Обновить список</button>
-        <button id="m-add">Добавить задания из файла</button>
+        <button id="m-log"></button>
+        <button id="m-res"></button>
+        <button id="m-reset"></button>
+        <button id="m-refresh"></button>
+        <button id="m-add"></button>
       </div>
       <input type="file" id="file" accept=".json,application/json" multiple hidden>
     </details>
@@ -181,6 +203,72 @@
 <script>
 const TOKEN = new URLSearchParams(location.search).get('t') || '';
 let tasks = [], current = null, curId = null;
+
+/* ---------- язык и тема ---------- */
+const I18N = {
+  ru: {
+    brand: 'Практика Python', sub: 'задания по темам', more: 'Ещё',
+    m_log: 'Открыть лог', m_res: 'Открыть папку результатов', m_reset: 'Начать задание заново', m_refresh: 'Обновить список', m_add: 'Добавить задания из файла',
+    theme_auto: '◐ Авто', theme_light: '☀ Светлая', theme_dark: '☾ Тёмная', theme_title: 'Тема оформления',
+    none: 'Заданий на этом языке пока нет. Добавь файл через «Ещё» → «Добавить задания из файла».',
+    file_err: 'не удалось прочитать файл', file_err_toast: (id, e) => 'Файл «' + id + '.json»: ' + e,
+    passed: 'пройдено ✓', solved_of: (a, b) => `решено ${a} из ${b}`,
+    choose_h: 'Выбери задание слева', choose_p: 'Здесь пишется код, и сразу видно, что он выводит.',
+    all_solved: (n) => `Решено ${n} из ${n}`, task_n: (i, n) => `Задача ${i} из ${n}`,
+    done_h: 'Задание пройдено', done_p: 'Все задачи решены. Результат записан в папку результатов: в меню «Ещё» есть пункт «Открыть папку результатов».',
+    lab_task: 'Условие', tab_about: 'О задании', tab_help: 'Справка', about_h: 'Об этой задаче', general_h: 'Как отвечать',
+    aria_code: 'Код', aria_expr: 'Выражение',
+    ph_shell: 'Напиши команды, каждую с новой строки', ph_code: 'Напиши код здесь', ph_expr: 'Запиши выражение, а не готовый результат',
+    ready_top: '🔒 Готовая часть. Её менять нельзя.', ready_bottom: '🔒 Готовая часть. Её менять нельзя: она показывает результат в консоли.',
+    run: '▶ Запустить', check: '✓ Проверить', next: 'Дальше', finish: 'Завершить', keys_code: 'Ctrl + Enter: запустить', keys_expr: 'Enter: запустить',
+    console: 'Консоль', console_empty: 'Здесь появится результат. Нажми «Запустить», чтобы посмотреть, что получается, или «Проверить», чтобы сдать задачу.',
+    mode_run: 'запуск', mode_check: 'проверка', mode_err: 'ошибка', nothing: '(программа ничего не вывела)', no_output: 'Нет вывода.',
+    err_status: 'Ошибка ', open_fail: 'Не удалось открыть', pick_first: 'Сначала выбери задание',
+    confirm_reset: 'Начать задание заново? Весь прогресс по нему сбросится (лог останется).',
+    added_one: 'Задание добавлено', added_n: (n) => `Добавлено заданий: ${n}`, add_fail: 'Не получилось добавить: ',
+  },
+  en: {
+    brand: 'Python Practice', sub: 'tasks by topic', more: 'More',
+    m_log: 'Open the log', m_res: 'Open the results folder', m_reset: 'Restart this task set', m_refresh: 'Refresh the list', m_add: 'Add tasks from a file',
+    theme_auto: '◐ Auto', theme_light: '☀ Light', theme_dark: '☾ Dark', theme_title: 'Color theme',
+    none: 'No tasks in this language yet. Add a file via More → Add tasks from a file.',
+    file_err: 'could not read the file', file_err_toast: (id, e) => 'File "' + id + '.json": ' + e,
+    passed: 'done ✓', solved_of: (a, b) => `solved ${a} of ${b}`,
+    choose_h: 'Pick a task set on the left', choose_p: 'Write code here and see right away what it prints.',
+    all_solved: (n) => `Solved ${n} of ${n}`, task_n: (i, n) => `Question ${i} of ${n}`,
+    done_h: 'Task set complete', done_p: 'All questions are solved. The result is saved in the results folder: use "Open the results folder" in the More menu.',
+    lab_task: 'Task', tab_about: 'About', tab_help: 'Help', about_h: 'About this question', general_h: 'How to answer',
+    aria_code: 'Code', aria_expr: 'Expression',
+    ph_shell: 'Write the commands, one per line', ph_code: 'Write your code here', ph_expr: 'Write an expression, not the ready result',
+    ready_top: '🔒 Ready part. It cannot be changed.', ready_bottom: '🔒 Ready part. It cannot be changed: it shows the result in the console.',
+    run: '▶ Run', check: '✓ Check', next: 'Next', finish: 'Finish', keys_code: 'Ctrl + Enter: run', keys_expr: 'Enter: run',
+    console: 'Console', console_empty: 'The result will appear here. Press Run to see what happens, or Check to submit.',
+    mode_run: 'run', mode_check: 'check', mode_err: 'error', nothing: '(the program printed nothing)', no_output: 'No output.',
+    err_status: 'Error ', open_fail: 'Could not open', pick_first: 'Pick a task set first',
+    confirm_reset: 'Restart this task set? All its progress will be reset (the log stays).',
+    added_one: 'Task set added', added_n: (n) => `Task sets added: ${n}`, add_fail: 'Could not add: ',
+  },
+};
+function store(key, value) { try { if (value === undefined) return localStorage.getItem(key); localStorage.setItem(key, value); } catch (e) { return null; } return null; }
+let lang = store('lang') || ((navigator.language || '').toLowerCase().startsWith('ru') ? 'ru' : 'en');
+if (!I18N[lang]) lang = 'ru';
+let theme = store('theme') || 'auto';
+function t(key, ...args) { const v = I18N[lang][key]; return typeof v === 'function' ? v(...args) : v; }
+function applyTheme() {
+  document.documentElement.dataset.theme = theme;
+  document.getElementById('theme').textContent = t('theme_' + theme);
+}
+function applyStatic() {
+  document.documentElement.lang = lang;
+  document.title = t('brand');
+  const set = (id, key) => { document.getElementById(id).textContent = t(key); };
+  set('brand-name', 'brand'); set('brand-sub', 'sub'); set('m-more', 'more');
+  set('m-log', 'm_log'); set('m-res', 'm_res'); set('m-reset', 'm_reset'); set('m-refresh', 'm_refresh'); set('m-add', 'm_add');
+  document.getElementById('theme').title = t('theme_title');
+  document.getElementById('lang-ru').setAttribute('aria-pressed', String(lang === 'ru'));
+  document.getElementById('lang-en').setAttribute('aria-pressed', String(lang === 'en'));
+  applyTheme();
+}
 
 function el(tag, attrs, ...kids) {
   const e = document.createElement(tag);
@@ -195,7 +283,7 @@ function el(tag, attrs, ...kids) {
 }
 
 async function api(path, body) {
-  const opt = { headers: { 'X-Token': TOKEN } };
+  const opt = { headers: { 'X-Token': TOKEN, 'X-Lang': lang } };
   if (body !== undefined) {
     opt.method = 'POST';
     opt.headers['Content-Type'] = 'application/json';
@@ -203,7 +291,7 @@ async function api(path, body) {
   }
   const r = await fetch(path, opt);
   const data = await r.json().catch(() => ({}));
-  if (!r.ok) throw new Error(data.error || ('Ошибка ' + r.status));
+  if (!r.ok) throw new Error(data.error || (t('err_status') + r.status));
   return data;
 }
 
@@ -262,7 +350,7 @@ function highlightConsole(text) {
 function fmt(text) {
   const out = [];
   for (const line of text.split('\n')) {
-    const lm = line.match(/^(Что сделать|Что должно получиться|Что дано|Что нужно[^:]*|Ограничение|Где смотреть|Готовая часть|Зачем это нужно|Что получится в итоге|Важно):/);
+    const lm = line.match(/^(What to do|Expected result|Where to look|Given|Constraint|Ready part|Note|Что сделать|Что должно получиться|Что дано|Что нужно[^:]*|Ограничение|Где смотреть|Готовая часть|Зачем это нужно|Что получится в итоге|Важно):/);
     const rest = lm ? line.slice(lm[0].length) : line;
     if (lm) out.push(el('span', { class: 'label' }, lm[0]));
     let pos = 0, m;
@@ -287,12 +375,12 @@ async function loadList() {
   tasks = (await api('/api/tasks')).tasks;
   const nav = document.getElementById('list');
   nav.replaceChildren();
-  if (!tasks.length) nav.append(el('div', { class: 'none' }, 'Заданий пока нет. Файлы заданий лежат в папке «Тестовые задания/Задания».'));
-  for (const t of tasks) {
-    const sub = t.error ? 'не удалось прочитать файл' : (t.passed ? 'пройдено ✓' : `решено ${t.solved} из ${t.total}`);
-    nav.append(el('button', { class: t.passed ? 'done' : '', 'aria-current': t.id === curId ? 'true' : 'false',
-        onclick: () => t.error ? toast('Файл «' + t.id + '.json»: ' + t.error) : openTask(t.id) },
-      el('span', { class: 'name' }, t.title), el('span', { class: 'sub' }, sub)));
+  if (!tasks.length) nav.append(el('div', { class: 'none' }, t('none')));
+  for (const x of tasks) {
+    const sub = x.error ? t('file_err') : (x.passed ? t('passed') : t('solved_of', x.solved, x.total));
+    nav.append(el('button', { class: x.passed ? 'done' : '', 'aria-current': x.id === curId ? 'true' : 'false',
+        onclick: () => x.error ? toast(t('file_err_toast', x.id, x.error)) : openTask(x.id) },
+      el('span', { class: 'name' }, x.title), el('span', { class: 'sub' }, sub)));
   }
 }
 
@@ -310,8 +398,8 @@ function firstUnsolved() {
 
 function renderEmpty() {
   document.getElementById('main').replaceChildren(el('div', { class: 'wrap' },
-    el('div', { class: 'empty' }, el('h2', {}, 'Выбери задание слева'),
-      el('p', {}, 'Здесь ты пишешь код и сразу видишь, что он выводит.'))));
+    el('div', { class: 'empty' }, el('h2', {}, t('choose_h')),
+      el('p', {}, t('choose_p')))));
 }
 
 /* ---------- экран задания ---------- */
@@ -323,14 +411,14 @@ function render() {
 
   const dots = el('div', { class: 'steps' });
   for (let i = 0; i < total; i++) dots.append(el('span', { class: 'dot ' + (current.solved[i] !== undefined ? 'done' : (i === idx ? 'now' : '')) }));
-  dots.append(el('span', { class: 'txt' }, idx === -1 ? `Решено ${total} из ${total}` : `Задача ${idx + 1} из ${total}`));
+  dots.append(el('span', { class: 'txt' }, idx === -1 ? t('all_solved', total) : t('task_n', idx + 1, total)));
 
   wrap.append(el('div', { class: 'head' },
     el('div', {}, current.topic ? el('div', { class: 'topic' }, current.topic) : null, el('h1', {}, current.title)), dots));
 
   if (idx === -1) {
-    wrap.append(el('div', { class: 'done-box' }, el('h2', {}, 'Задание пройдено'),
-      el('p', {}, 'Все задачи решены. Результат записан в папку результатов: в меню «Ещё» есть пункт «Открыть папку результатов».')));
+    wrap.append(el('div', { class: 'done-box' }, el('h2', {}, t('done_h')),
+      el('p', {}, t('done_p'))));
   } else {
     wrap.append(...workArea(idx));
   }
@@ -344,19 +432,19 @@ function workArea(idx) {
   const isScript = q.type === 'script';
   const isCode = q.type === 'code' || q.type === 'shell' || isScript;
 
-  const task = el('div', { class: 'task' }, el('div', { class: 'lab' }, 'Условие'), el('p', {}, ...fmt(q.text)));
+  const task = el('div', { class: 'task' }, el('div', { class: 'lab' }, t('lab_task')), el('p', {}, ...fmt(q.text)));
   const tabs = [];
   const about = q.about || current.intro;
-  if (about || current.general) tabs.push(['О задании', () => [
-    about ? el('div', { class: 'sec' }, el('h4', {}, 'Об этой задаче'), el('p', {}, ...fmt(about))) : null,
-    current.general ? el('div', { class: 'sec' }, el('h4', {}, 'Как отвечать'), el('p', {}, ...fmt(current.general))) : null,
+  if (about || current.general) tabs.push(['about', t('tab_about'), () => [
+    about ? el('div', { class: 'sec' }, el('h4', {}, t('about_h')), el('p', {}, ...fmt(about))) : null,
+    current.general ? el('div', { class: 'sec' }, el('h4', {}, t('general_h')), el('p', {}, ...fmt(current.general))) : null,
   ].filter(Boolean)]);
-  if (current.help && current.help.length) tabs.push(['Справка', () => current.help.map(x =>
+  if (current.help && current.help.length) tabs.push(['help', t('tab_help'), () => current.help.map(x =>
     el('div', { class: 'sec' }, el('h4', {}, ...fmt(x.h)), x.t ? el('p', {}, ...fmt(x.t)) : null, x.code ? (() => { const pr = el('pre', {}); pr.innerHTML = highlightExample(x.code); return pr; })() : null))]);
   if (tabs.length) {
     const bar = el('div', { class: 'tabs' }), body = el('div', { hidden: true });
     let open = null;
-    tabs.forEach(([name, make], i) => {
+    tabs.forEach(([key, name, make], i) => {
       const b = el('button', { class: 'tab', 'aria-expanded': 'false' }, name);
       b.addEventListener('click', () => {
         const same = open === i;
@@ -369,15 +457,15 @@ function workArea(idx) {
     });
     task.append(bar, body);
     if (idx === 0) {
-      const hi = tabs.findIndex(t => t[0] === 'Справка');
+      const hi = tabs.findIndex(x => x[0] === 'help');
       if (hi >= 0) bar.querySelectorAll('.tab')[hi].click();
     }
   }
 
   const gutter = el('div', { class: 'gutter' }, isCode ? '1' : '>>>');
   const field = el('textarea', { id: 'answer', spellcheck: 'false', autocomplete: 'off', wrap: 'off',
-    rows: isScript ? (q.min_lines || 3) : (isCode ? 9 : 2), 'aria-label': isCode ? 'Код' : 'Выражение',
-    placeholder: q.placeholder || (isCode ? (q.type === 'shell' ? 'Напиши команды, каждую с новой строки' : 'Напиши код здесь') : 'Запиши выражение, а не готовый результат') });
+    rows: isScript ? (q.min_lines || 3) : (isCode ? 9 : 2), 'aria-label': isCode ? t('aria_code') : t('aria_expr'),
+    placeholder: q.placeholder || (isCode ? (q.type === 'shell' ? t('ph_shell') : t('ph_code')) : t('ph_expr')) });
   if (isCode && q.starter) field.value = q.starter;
   const hl = el('pre', { class: 'hl', 'aria-hidden': 'true' });
   const nums = (from, n) => Array.from({ length: n }, (_, i) => from + i).join('\n');
@@ -390,14 +478,14 @@ function workArea(idx) {
     if (q.before) {
       const g = el('div', { class: 'gutter' }, nums(1, beforeLines));
       const pre = el('pre', { class: 'ro' }); pre.innerHTML = highlight(q.before.replace(/\n+$/, ''));
-      parts.push(el('div', { class: 'ready-note' }, '🔒 Готовая часть. Её менять нельзя.'), el('div', { class: 'part ready top' }, g, pre));
+      parts.push(el('div', { class: 'ready-note' }, t('ready_top')), el('div', { class: 'part ready top' }, g, pre));
     }
     gutter.textContent = nums(beforeLines + 1, minLines);
     parts.push(el('div', { class: 'part mine' }, gutter, el('div', { class: 'code' }, hl, field)));
     if (q.after) {
       gutterAfter = el('div', { class: 'gutter' }, '');
       const pre = el('pre', { class: 'ro' }); pre.innerHTML = highlight(q.after.replace(/\n+$/, ''));
-      parts.push(el('div', { class: 'ready-note bottom' }, '🔒 Готовая часть. Её менять нельзя: она показывает результат в консоли.'),
+      parts.push(el('div', { class: 'ready-note bottom' }, t('ready_bottom')),
         el('div', { class: 'part ready bottom' }, gutterAfter, pre));
     }
     editor = el('div', { class: 'editor script' }, ...parts);
@@ -424,15 +512,15 @@ function workArea(idx) {
   field.addEventListener('scroll', () => { hl.scrollTop = field.scrollTop; hl.scrollLeft = field.scrollLeft; gutter.scrollTop = field.scrollTop; });
   gutterUpdate();
 
-  const runBtn = el('button', { class: 'btn', id: 'run' }, '▶ Запустить');
-  const checkBtn = el('button', { class: 'btn primary', id: 'check' }, '✓ Проверить');
-  const nextBtn = el('button', { class: 'btn primary', hidden: true, onclick: render }, 'Дальше');
-  const keys = el('span', { class: 'keys' }, isCode ? 'Ctrl + Enter: запустить' : 'Enter: запустить');
+  const runBtn = el('button', { class: 'btn', id: 'run' }, t('run'));
+  const checkBtn = el('button', { class: 'btn primary', id: 'check' }, t('check'));
+  const nextBtn = el('button', { class: 'btn primary', hidden: true, onclick: render }, t('next'));
+  const keys = el('span', { class: 'keys' }, isCode ? t('keys_code') : t('keys_expr'));
 
   const modeLabel = el('span', {}, '');
-  const out = el('pre', { class: 'empty' }, 'Здесь появится результат. Нажми «Запустить», чтобы посмотреть, что получается, или «Проверить», чтобы сдать задачу.');
+  const out = el('pre', { class: 'empty' }, t('console_empty'));
   const verdict = el('div', { class: 'verdict', hidden: true });
-  const con = el('div', { class: 'console' }, el('div', { class: 'bar' }, el('span', {}, 'Консоль'), modeLabel), out, verdict);
+  const con = el('div', { class: 'console' }, el('div', { class: 'bar' }, el('span', {}, t('console')), modeLabel), out, verdict);
 
   function show(text, isErr, mode) {
     out.className = isErr ? 'err' : 'hlc';
@@ -446,8 +534,8 @@ function workArea(idx) {
     verdict.hidden = true;
     try {
       const r = await api('/api/run', { id: current.id, index: idx, answer: field.value });
-      show(r.console, r.error, 'запуск');
-    } catch (e) { show(e.message, true, 'ошибка'); }
+      show(r.console, r.error, t('mode_run'));
+    } catch (e) { show(e.message, true, t('mode_err')); }
     finally { runBtn.disabled = false; }
   }
 
@@ -456,15 +544,15 @@ function workArea(idx) {
     checkBtn.disabled = true;
     try {
       const r = await api('/api/check', { id: current.id, index: idx, answer: field.value });
-      let text = r.console ?? (r.output !== undefined ? (r.output === '' ? '(программа ничего не вывела)' : r.output) : '');
-      if (text) show(text, !!r.console_error, 'проверка'); else { out.className = 'empty'; out.textContent = 'Нет вывода.'; modeLabel.textContent = 'проверка'; }
+      let text = r.console ?? (r.output !== undefined ? (r.output === '' ? t('nothing') : r.output) : '');
+      if (text) show(text, !!r.console_error, t('mode_check')); else { out.className = 'empty'; out.textContent = t('no_output'); modeLabel.textContent = t('mode_check'); }
       verdict.hidden = false;
       verdict.className = 'verdict ' + (r.ok ? 'ok' : 'bad');
       verdict.replaceChildren(...[r.message, r.hint ? el('span', { class: 'more' }, r.hint) : null].filter(Boolean));
       if (r.ok) {
         current.solved[idx] = r.attempts || 1;
         field.readOnly = true; runBtn.hidden = true; checkBtn.hidden = true; keys.hidden = true;
-        nextBtn.hidden = false; nextBtn.textContent = r.finished ? 'Завершить' : 'Дальше';
+        nextBtn.hidden = false; nextBtn.textContent = r.finished ? t('finish') : t('next');
         nextBtn.focus();
         loadList();
       }
@@ -493,14 +581,14 @@ function workArea(idx) {
 async function openSystem(what) {
   try {
     const r = await api('/api/open', { what, id: curId });
-    if (!r.ok) toast(r.message || 'Не удалось открыть');
+    if (!r.ok) toast(r.message || t('open_fail'));
   } catch (e) { toast(e.message); }
 }
 document.getElementById('m-log').addEventListener('click', () => openSystem('log'));
 document.getElementById('m-res').addEventListener('click', () => openSystem('results'));
 document.getElementById('m-reset').addEventListener('click', async () => {
-  if (!curId) return toast('Сначала выбери задание');
-  if (!confirm('Начать задание заново? Весь прогресс по нему сбросится (лог останется).')) return;
+  if (!curId) return toast(t('pick_first'));
+  if (!confirm(t('confirm_reset'))) return;
   try { await api('/api/reset', { id: curId }); await openTask(curId); } catch (e) { toast(e.message); }
 });
 document.getElementById('m-refresh').addEventListener('click', async () => {
@@ -518,10 +606,10 @@ document.getElementById('file').addEventListener('change', async (ev) => {
     catch (e) { problems.push(f.name + ': ' + e.message); }
   }
   if (last) {
-    toast(files.length - problems.length === 1 ? 'Задание добавлено' : `Добавлено заданий: ${files.length - problems.length}`);
+    toast(files.length - problems.length === 1 ? t('added_one') : t('added_n', files.length - problems.length));
     await openTask(last);
   }
-  if (problems.length) toast('Не получилось добавить: ' + problems.join('; '));
+  if (problems.length) toast(t('add_fail') + problems.join('; '));
 });
 
 /* ---------- сигнал «окно открыто» ---------- */
@@ -530,6 +618,21 @@ setInterval(ping, 5000);
 ping();
 window.addEventListener('focus', () => { loadList().catch(() => {}); });
 
+/* переключатели языка и темы */
+async function setLang(l) {
+  if (l === lang) return;
+  lang = l; store('lang', l); applyStatic();
+  current = null; curId = null;
+  try { await loadList(); } catch (e) { toast(e.message); }
+  renderEmpty();
+}
+document.getElementById('lang-ru').addEventListener('click', () => setLang('ru'));
+document.getElementById('lang-en').addEventListener('click', () => setLang('en'));
+document.getElementById('theme').addEventListener('click', () => {
+  theme = ({ auto: 'light', light: 'dark', dark: 'auto' })[theme] || 'auto';
+  store('theme', theme); applyTheme();
+});
+applyStatic();
 loadList().then(renderEmpty).catch((e) => toast(e.message));
 </script>
 </body>

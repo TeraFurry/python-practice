@@ -19,13 +19,13 @@ If you are not a programmer, copy the prompt below into any AI assistant, replac
 
 ```
 Write a beginner Python practice task as a single JSON file for the app "Python Practice".
-Topic: [for example "the for loop"]. Language of the texts: [English / Russian]. I need [7] questions.
+Topic: [for example "the for loop"]. Language of the texts: [English / Russian] (put "lang": "en" for English or "lang": "ru" for Russian at the top level of the file). I need [7] questions.
 
 File format:
 - Top level: "title", "topic", "general" (a short "how to answer" note shared by the whole task), "help" (a list of help steps: {"h": heading, "t": text, "code": code example}), "questions" (a list of questions).
 - The first help item is a "Lesson" that explains the topic in simple words with examples.
 - Each question: {"type": "script", "text": the task text, "about": "Practice: ...", "before": ready code BEFORE the solution (optional), "after": ready code AFTER the solution (usually print(...)), "starter": code that is already in the field (for "fix the ready code" questions), "expected_output": the exact console output, "assigns": [variable names that must be created], "uses_names": [variable names that must be used], "consts": {name: the value that must be assigned to it}, "required": [operators + - * / // % ** that must appear in the solution], "required_text": [fragments that must appear in the code], "max_text": {fragment: how many times it may be written}, "expected_error": "name of the error, e.g. NameError (instead of expected_output)", "inputs": [answers to input(), in order]}. Use only the fields a question needs.
-- In texts you can use `code`, **bold** and ==highlight==. Each task text has three lines: "**What to do:** ...", "**Expected result:** ...", "**Where to look:** ...".
+- In texts you can use `code`, **bold** and ==highlight==. Each task text has three lines: "What to do: ...", "Expected result: ...", "Where to look: ...".
 
 Rules for the questions:
 1. A ladder: first 1-2 "repeat the example from the lesson", then 1-2 "fix the ready code", then "write your own", and one question about reading an error at the end.
@@ -44,6 +44,7 @@ Return only the JSON.
 |---|---|---|
 | `title` | yes | name of the task set (shown in the list and in the header) |
 | `topic` | no | topic, a small label above the title |
+| `lang` | no | `"ru"` or `"en"`: the app language in which this task set is shown. Without the field the set is shown in both languages |
 | `general` | no | shared "how to answer" text (tab "О задании"), one per task set |
 | `help` | no | the help tab: a list of steps `{"h": heading, "t": text, "code": example}` |
 | `questions` | yes | the list of questions (not empty) |
@@ -76,7 +77,7 @@ The extra types `expression`, `text`, `code` and `shell` are kept for old files;
 
 ### Text markup
 
-In `text`, `t` and `general` you can write `` `code` ``, `**bold**`, `__underline__` and `==highlight==`. Every line break is a new line on screen. Labels at the start of a line (`Что сделать:`, `Что должно получиться:`, `Где смотреть:`, `Что дано:`, `Ограничение:` and so on) are highlighted automatically; for other languages just write the label in bold, like `**What to do:**`.
+In `text`, `t` and `general` you can write `` `code` ``, `**bold**`, `__underline__` and `==highlight==`. Every line break is a new line on screen. Labels at the start of a line are highlighted automatically: in English `What to do:`, `Expected result:`, `Where to look:`, `Given:`, `Constraint:`, `Ready part:`, `Note:`; in Russian `Что сделать:`, `Что должно получиться:`, `Где смотреть:`, `Что дано:`, `Ограничение:` and so on. Other labels can be written in bold.
 
 In a help step's `code`: a line that starts with `|` is shown as a ready (locked) part, a line that starts with `→` is shown as program output, and `# ...` is a comment.
 

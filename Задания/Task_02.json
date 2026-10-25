@@ -1,0 +1,165 @@
+{
+  "title": "Data types and strings",
+  "topic": "Strings",
+  "lang": "en",
+  "general": "Read the task: it says what to do, what the result must be and where to look. Under the task there is a Help tab: the first item is the Lesson, then steps with examples. The way to solve the task is not written in the help; you find it yourself.\nType your code in the field. Grey lines with a lock cannot be changed. Press Run: the result appears in the console. You can try as many times as you like, it does not count as an attempt. When the result is what the task asks for, press Check: the program says correct or incorrect and shows what you got. It never shows the right answer.\nIf the field already contains a line, first press Run and look at what it prints, then change it.",
+  "help": [
+    {
+      "h": "Lesson: data types and strings (Al Sweigart's book, chapter 1)",
+      "t": "**Data type** is the kind of a value. Whole numbers: `-2`, `30`. Numbers with a dot: `3.14`, `42.0`. Strings: text in quotes, for example `'Hello'`; the quote at the start and at the end is the same. An empty string is two quotes in a row: `''`. If you forget the closing quote, Python writes SyntaxError.\nThe same sign works differently depending on the values. A plus between two strings **joins** them: `'Alice' + 'Bob'` gives AliceBob; a space is not added by itself. A star between a string and a whole number **repeats** the string: `'Alice' * 5` gives AliceAliceAliceAliceAlice.\nPython does not understand other combinations and writes TypeError: a string plus a number (`'Alice' + 42`), a string times a string, a string times a number with a dot. This is not a breakage, it is a message that the sign does not fit these values.\nHow to study: first read the lesson, then repeat the examples by hand (it is remembered better), then fix the ready code, and finally write your own."
+    },
+    {
+      "h": "How to read the examples",
+      "t": "In the examples you see program code. Lines with an arrow → are what the program prints to the console; you do not type them. Everything after the sign `#` is a comment: a note for people. Python skips it and you do not type it. Lines with a lock 🔒 are the ready part. Every task has such a part: it is shown in grey next to the field and cannot be changed. It prints the result to the console like in a real program. How it works will be explained in a separate lesson. Every example works on its own: you can run it from scratch."
+    },
+    {
+      "h": "1. How the field works",
+      "t": "In the task you write only the expression itself. Here an expression is texts with signs between them, for example `'a' + 'b'`. Around the expression there are two ready lines: `print(` above and `)` below. Together with the expression they show the result in the console. Press Run: the result appears in the console. Press Check when the solution is ready.",
+      "code": "| print(            # ready part: opens the output\n'a' + 'b'   # the expression: two texts\n| )                # ready part: closes the output\n→ ab"
+    },
+    {
+      "h": "2. Text (string)",
+      "t": "Text is written in quotes: single 'like this' or double \"like this\". The quote at the start and at the end must be the same. Quotes are needed only in the code: they tell Python that this is text. There will be no quotes in the console. Any sign inside quotes is just part of the text, like a letter: `'@'`, `'*'`, `'-'`, `'.'`.",
+      "code": "| print(            # ready part: opens the output\n'Hello'   # text in quotes\n| )                # ready part: closes the output\n→ Hello"
+    },
+    {
+      "h": "3. A space and an empty text",
+      "t": "A space inside quotes is also part of the text. It counts as an ordinary sign. An empty text is two quotes in a row with nothing between them: `''`.",
+      "code": "| print(            # ready part: opens the output\n'Good morning'   # text with a space between the words\n| )                # ready part: closes the output\n→ Good morning"
+    },
+    {
+      "h": "4. The plus sign between texts",
+      "t": "The sign `+` joins two texts into one. A space is not added by itself: if it is needed, it is written as a separate text `' '`.",
+      "code": "| print(            # ready part: the first output\n'Home' + 'work'   # joined two texts without a space\n| )                # ready part: end of the first output\n| print(            # ready part: the second output\n'Home' + ' ' + 'work'   # joined three texts: word, space, word\n| )                # ready part: end of the second output\n→ Homework\n→ Home work"
+    },
+    {
+      "h": "5. The star sign with a text and a number",
+      "t": "The sign `*` repeats a text as many times as the number says. The number must be whole and is written without quotes.",
+      "code": "| print(            # ready part: opens the output\n'Yes' * 3   # the text 'Yes' repeated 3 times\n| )                # ready part: closes the output\n| print(            # ready part: the second output\n'+' * 4   # a plus in quotes is an ordinary sign: it was repeated 4 times\n| )                # ready part: end of the second output\n→ YesYesYes\n→ ++++"
+    },
+    {
+      "h": "6. Several signs together",
+      "t": "Python does `*` first, then `+`. Parentheses change the order: what is in parentheses is done first.",
+      "code": "| print(            # ready part: opens the output\n'Yes' * 2 + '!'   # first 'Yes' * 2 = 'YesYes', then + '!'\n| )                # ready part: closes the output\n→ YesYes!"
+    },
+    {
+      "h": "7. If it says TypeError",
+      "t": "Python says `TypeError` when a sign does not fit these data types. This is not a breakage, it is a message. Causes: multiplying text by text, multiplying text by a number with a dot, adding text and a number.\n• Wrong: `'Yes' * 'Yes'` (text times text).\n• Right: `'Yes' * 2` (text times a whole number).\nWhat to check: what is on the left and on the right of the sign, whether it is text or a number, whether there are extra quotes around a number. The last line of the message says exactly what is wrong. The line above shows the place in the program where it happened.",
+      "code": "| print(            # ready part: opens the output\n'Yes' * 'Yes'   # error: text cannot be multiplied by text\n| )                # ready part: closes the output\n→ Traceback (most recent call last):\n→   File \"solution.py\", line 2, in <module>\n→     'Yes' * 'Yes'\n→ TypeError: can't multiply sequence by non-int of type 'str'"
+    }
+  ],
+  "questions": [
+    {
+      "type": "script",
+      "before": "print(",
+      "after": ")",
+      "min_lines": 1,
+      "expected_output": "AliceBob",
+      "placeholder": "Write an expression",
+      "required": [
+        "+"
+      ],
+      "text": "What to do: type `'Alice' + 'Bob'` in the field and press Run. This is an example from the lesson (type the quotes too).\nExpected result: the console shows `AliceBob`.\nWhere to look: Help, \"Lesson\".",
+      "about": "Practice: typing code by hand."
+    },
+    {
+      "type": "script",
+      "before": "print(",
+      "after": ")",
+      "min_lines": 1,
+      "expected_output": "AliceAliceAliceAliceAlice",
+      "placeholder": "Write an expression",
+      "required": [
+        "*"
+      ],
+      "text": "What to do: type `'Alice' * 5` in the field and press Run. This is an example from the lesson (type the quotes too).\nExpected result: the console shows `AliceAliceAliceAliceAlice`.\nWhere to look: Help, \"Lesson\".",
+      "about": "Practice: typing code by hand."
+    },
+    {
+      "type": "script",
+      "before": "print(",
+      "after": ")",
+      "min_lines": 1,
+      "expected_output": "anna@mail.com",
+      "placeholder": "Write an expression",
+      "required": [
+        "+"
+      ],
+      "text": "What to do: print one text made of three parts: `anna`, `@` and `mail.com`.\nExpected result: the console shows `anna@mail.com`, without spaces.\nWhere to look: Help, \"Lesson\", steps 2 and 4.",
+      "about": "Practice: working with text in quotes."
+    },
+    {
+      "type": "script",
+      "before": "print(",
+      "after": ")",
+      "min_lines": 1,
+      "expected_output": "Anna Smith",
+      "placeholder": "Write an expression",
+      "required": [
+        "+"
+      ],
+      "starter": "'Anna' + 'Smith'",
+      "text": "What to do: the field contains a line that prints `AnnaSmith`. Change it so that one space appears between the words. Do not retype the whole text.\nExpected result: the console shows `Anna Smith`.\nWhere to look: Help, \"Lesson\", steps 3 and 4.",
+      "about": "Practice: how to fix a ready line."
+    },
+    {
+      "type": "script",
+      "before": "print(",
+      "after": ")",
+      "min_lines": 1,
+      "expected_output": "******************************",
+      "placeholder": "Write an expression",
+      "required": [
+        "*"
+      ],
+      "text": "What to do: print 30 stars `*` in a row. Typing a row of 30 stars by hand is not allowed.\nExpected result: the console shows a row of exactly 30 stars.\nWhere to look: Help, \"Lesson\", steps 2 and 5.",
+      "about": "Practice: working with text in quotes."
+    },
+    {
+      "type": "script",
+      "before": "print(",
+      "after": ")",
+      "min_lines": 1,
+      "expected_output": "---------- Report ----------",
+      "placeholder": "Write an expression",
+      "required": [
+        "+",
+        "*"
+      ],
+      "text": "What to do: print a line where the word `Report` is between rows of hyphens `-`: 10 hyphens on each side and one space around the word. Typing rows of 10 hyphens by hand is not allowed.\nExpected result: the console shows `---------- Report ----------`.\nWhere to look: Help, \"Lesson\", steps 3, 4, 5 and 6.",
+      "about": "Practice: working with text in quotes."
+    },
+    {
+      "type": "script",
+      "before": "print(",
+      "after": ")",
+      "min_lines": 1,
+      "expected_output": "Ha-Ha-Ha",
+      "placeholder": "Write an expression",
+      "required": [
+        "+",
+        "*"
+      ],
+      "max_text": {
+        "Ha": 2
+      },
+      "text": "What to do: print `Ha-Ha-Ha` made of two parts: `Ha-` and `Ha`. The word `Ha` may be written at most twice in the line of code.\nExpected result: the console shows `Ha-Ha-Ha`.\nWhere to look: Help, \"Lesson\", steps 4, 5 and 6.",
+      "about": "Practice: working with text in quotes."
+    },
+    {
+      "type": "script",
+      "before": "print(",
+      "after": ")",
+      "min_lines": 1,
+      "expected_error": "TypeError",
+      "placeholder": "Write an expression",
+      "required_text": [
+        "Alice",
+        "42",
+        "+"
+      ],
+      "text": "What to do: join the text `'Alice'` and the number `42` with a plus so that Python stops with an error.\nExpected result: a red message in the console whose last line starts with the name of the error.\nWhere to look: Help, \"Lesson\" and step 7.",
+      "about": "Practice: reading an error message."
+    }
+  ]
+}

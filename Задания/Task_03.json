@@ -1,0 +1,193 @@
+{
+  "title": "Variables",
+  "topic": "Variables",
+  "lang": "en",
+  "general": "Read the task: it says what to do, what the result must be and where to look. Under the task there is a Help tab: the first item is the Lesson, then steps with examples. The way to solve the task is not written in the help; you find it yourself.\nType your code in the field. Grey lines with a lock cannot be changed. Press Run: the result appears in the console. You can try as many times as you like, it does not count as an attempt. When the result is what the task asks for, press Check: the program says correct or incorrect and shows what you got. It never shows the right answer.\nIf the field already contains a line, first press Run and look at what it prints, then change it.",
+  "help": [
+    {
+      "h": "Lesson: variables (Al Sweigart's book, chapter 1)",
+      "t": "A **variable** is a box with a name into which one value is put. The sign `=` means \"put into the box\": the name is on the left, the value on the right. The line `spam = 'Hello'` puts the text Hello into the box spam.\nIf you put another value into the same box, the old one disappears: after `spam = 'Hello'` and `spam = 'Goodbye'` the box spam holds Goodbye.\nA variable name: one word without spaces, only letters, digits and the sign `_`, not starting with a digit. Big and small letters are different: `spam` and `Spam` are two names. Until a variable is created, Python does not know it and writes NameError.\nHow to study: first read the lesson, then repeat the examples by hand (it is remembered better), then fix the ready code, and finally write your own."
+    },
+    {
+      "h": "How to read the examples",
+      "t": "In the examples you see program code. Lines with an arrow → are what the program prints to the console; you do not type them. Everything after the sign `#` is a comment: a note for people. Python skips it and you do not type it. Lines with a lock 🔒 are the ready part. Every task has such a part: it is shown in grey next to the field and cannot be changed. It prints the result to the console like in a real program. How it works will be explained in a separate lesson. Every example works on its own: you can run it from scratch."
+    },
+    {
+      "h": "1. What a variable is",
+      "t": "A variable is a box with a name. The name is written on the box, the value lies inside. The sign `=` means \"put into the box\": on the left the name of the box, on the right what we put. After such a line nothing appears in the console: Python just put the value into the box. That is how it should be.",
+      "code": "color = 'blue'    # created a box color and put the text 'blue' into it"
+    },
+    {
+      "h": "2. Look at what is in the box",
+      "t": "To see the value, it has to be printed to the console. In the tasks the ready part under the field does it: it is shown in grey. A line with `=` shows nothing in the console by itself. Text is shown in the console without quotes: quotes are needed only in the code so that Python understands that it is text.",
+      "code": "color = 'blue'    # put 'blue' into the box color\n| print(color)     # ready part: shows what is in the box color\n→ blue"
+    },
+    {
+      "h": "3. Replace the value",
+      "t": "If you put another value into the same box, the old one disappears. A box always holds one value.",
+      "code": "color = 'blue'    # first the box holds 'blue'\ncolor = 'red'     # put 'red': the old value is gone\n| print(color)     # ready part: shows what is in the box now\n→ red"
+    },
+    {
+      "h": "4. A number and a text",
+      "t": "A number is written without quotes and a text in quotes. This matters: `30` is a number, but `'30'` is already a text of two characters.",
+      "code": "age = 30           # a number: no quotes\ncity = 'Paris'     # a text: in quotes\n| print(age)       # ready part: shows the number\n| print(city)      # ready part: shows the text\n→ 30\n→ Paris"
+    },
+    {
+      "h": "5. Variables in expressions",
+      "t": "The name of a box can be written instead of the value. Python substitutes what lies in it. That is how texts can be joined from variables.",
+      "code": "city = 'Paris'             # box city with a text\nphrase = 'City ' + city    # joined 'City ' and what is in city\n| print(phrase)            # ready part: shows the result\n→ City Paris"
+    },
+    {
+      "h": "6. Change a value based on the old one",
+      "t": "On the right of `=` you can use the variable itself. Python first takes the old value, calculates the right part, and then puts the result into the box.",
+      "code": "word = 'Hurray'        # the box word holds 'Hurray'\nword = word + '!'      # took 'Hurray', added '!', put it back into word\n| print(word)          # ready part: shows what the box holds now\n→ Hurray!"
+    },
+    {
+      "h": "7. Several commands",
+      "t": "Write each command on a new line. Python runs them in order, from top to bottom. A line with `=` shows nothing. Only the ready part shows. Every time you press Run, the program runs again from the first line."
+    },
+    {
+      "h": "8. Which name can be used",
+      "t": "• One word, without spaces.\n• Only letters, digits and the underscore `_`.\n• Does not start with a digit.\n• Big and small letters are different: `spam` and `Spam` are two different boxes.\n• Written without quotes. In quotes it is already a text.\nGood names: `account4`, `total_sum`, `_42`\nBad names: `4account` (starts with a digit), `total sum` (a space), `total-sum` (a hyphen)"
+    },
+    {
+      "h": "9. If it says NameError",
+      "t": "Python says `NameError` when it meets a name it does not know. The first cause: the order of lines. Python reads lines in order, from top to bottom. Until the line with `=` has run, the name does not exist for Python.\n• Wrong: first the line `color`, and below `color = 'blue'`. On the first line the name does not exist yet, and Python stops.\n• Right: first `color = 'blue'`, and below `color`.\nThe second cause: a typo. If the variable `spam` is created and below it is written `spamm`, Python considers it a different name. What to check: find in the message the name Python does not know (it is written in quotes) and check whether it is created above and whether the spelling matches. The line number of the error is also shown in the console. Below is an example for the wrong order from the first cause:",
+      "code": "color              # error: the name color appears before it is created\ncolor = 'blue'     # this line does not run anymore: Python stopped above\n→ Traceback (most recent call last):\n→   File \"solution.py\", line 1, in <module>\n→     color\n→ NameError: name 'color' is not defined"
+    }
+  ],
+  "questions": [
+    {
+      "type": "script",
+      "after": "print(color)",
+      "expected_output": "blue",
+      "assigns": [
+        "color"
+      ],
+      "consts": {
+        "color": "blue"
+      },
+      "text": "What to do: type `color = 'blue'` in the field and press Run. This is an example from the lesson.\nExpected result: the console shows `blue`. The output is done by the grey part under the field.\nWhere to look: Help, \"Lesson\", steps 1 and 2.",
+      "about": "Practice: typing code by hand."
+    },
+    {
+      "type": "script",
+      "after": "print(name)",
+      "expected_output": "Anna",
+      "assigns": [
+        "name"
+      ],
+      "consts": {
+        "name": "Anna"
+      },
+      "text": "What to do: save the text `Anna` in the variable `name`.\nExpected result: the console shows `Anna`. The output is done by the grey part under the field.\nWhere to look: Help, \"Lesson\", steps 1 and 2.",
+      "about": "Practice: storing values in variables."
+    },
+    {
+      "type": "script",
+      "after": "print(count)\nprint(item)",
+      "expected_output": "7\napples",
+      "assigns": [
+        "count",
+        "item"
+      ],
+      "consts": {
+        "count": 7,
+        "item": "apples"
+      },
+      "text": "What to do: save the number `7` in the variable `count` and the text `apples` in the variable `item`.\nExpected result: the console shows two lines: `7` and `apples`. The output is done by the grey part under the field.\nWhere to look: Help, \"Lesson\", steps 1, 2 and 4.",
+      "about": "Practice: storing values in variables."
+    },
+    {
+      "type": "script",
+      "after": "print(mood)",
+      "expected_output": "happy",
+      "assigns": [
+        "mood"
+      ],
+      "consts": {
+        "mood": "happy"
+      },
+      "min_assigns": {
+        "mood": 2
+      },
+      "starter": "mood = 'sad'",
+      "text": "What to do: the field contains a line where the variable `mood` holds the text `sad`. Make `mood` hold `happy`. Do not delete the first line.\nExpected result: the console shows `happy`. The output is done by the grey part under the field.\nWhere to look: Help, \"Lesson\" and step 3.",
+      "about": "Practice: how to fix a ready line."
+    },
+    {
+      "type": "script",
+      "after": "print(first)\nprint(last)\nprint(full)",
+      "expected_output": "Anna\nSmith\nAnna Smith",
+      "assigns": [
+        "first",
+        "last",
+        "full"
+      ],
+      "consts": {
+        "first": "Anna",
+        "last": "Smith"
+      },
+      "uses_names": [
+        "first",
+        "last"
+      ],
+      "required": [
+        "+"
+      ],
+      "text": "What to do: save the text `Anna` in the variable `first`, the text `Smith` in the variable `last`, and in the variable `full` build the full name from them. In `full` you must use the names `first` and `last`, not a ready text.\nExpected result: the console shows three lines: `Anna`, `Smith` and `Anna Smith`. The output is done by the grey part under the field.\nWhere to look: Help, \"Lesson\", steps 1, 2 and 5.",
+      "about": "Practice: storing values in variables."
+    },
+    {
+      "type": "script",
+      "after": "print(laugh)",
+      "expected_output": "HaHaHa",
+      "assigns": [
+        "laugh"
+      ],
+      "consts": {
+        "laugh": "Ha"
+      },
+      "uses_names": [
+        "laugh"
+      ],
+      "min_assigns": {
+        "laugh": 2
+      },
+      "text": "What to do: save the text `Ha` in the variable `laugh`, and then make `laugh` hold `HaHaHa`. The new value must be obtained from the variable itself, not typed ready.\nExpected result: the console shows `HaHaHa`. The output is done by the grey part under the field.\nWhere to look: Help, \"Lesson\", steps 3 and 6.",
+      "about": "Practice: storing values in variables."
+    },
+    {
+      "type": "script",
+      "expected_error": "NameError",
+      "required_text": [
+        "unknown"
+      ],
+      "text": "What to do: write the name `unknown` in the code without creating such a variable, so that Python stops with an error.\nExpected result: a red message in the console whose last line starts with the name of the error.\nWhere to look: Help, \"Lesson\" and step 9.",
+      "about": "Practice: reading an error message."
+    },
+    {
+      "type": "script",
+      "after": "print(message)",
+      "expected_output": "Hello, Anna!",
+      "assigns": [
+        "hello",
+        "name",
+        "message"
+      ],
+      "consts": {
+        "hello": "Hello",
+        "name": "Anna"
+      },
+      "uses_names": [
+        "hello",
+        "name"
+      ],
+      "required": [
+        "+"
+      ],
+      "text": "What to do: save the text `Hello` in the variable `hello`, the text `Anna` in the variable `name`, and in the variable `message` build `Hello, Anna!`. In `message` you must use the names `hello` and `name`, not a ready text.\nExpected result: the console shows `Hello, Anna!`. The output is done by the grey part under the field.\nWhere to look: Help, \"Lesson\" and step 5.",
+      "about": "Practice: storing values in variables."
+    }
+  ]
+}

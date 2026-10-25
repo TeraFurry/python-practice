@@ -77,6 +77,17 @@ else:
 }
 
 БЛОКИРОВКА = threading.Lock()
+КОНТЕКСТ = threading.local()  # язык текущего запроса (ru или en), приходит из окна в заголовке X-Lang
+
+
+def язык():
+    return getattr(КОНТЕКСТ, "lang", "ru")
+
+
+def Л(ру, ан):
+    """Возвращает текст на языке текущего запроса."""
+    return ан if язык() == "en" else ру
+
 ТОКЕН = secrets.token_urlsafe(24)
 ПОРТ = 0
 ПОСЛЕДНИЙ_ПИНГ = 0.0
@@ -87,24 +98,26 @@ else:
 def проверить_формат(данные):
     """Проверяет, что файл задания устроен правильно. При проблеме бросает ValueError."""
     if not isinstance(данные, dict):
-        raise ValueError("файл должен быть JSON-объектом")
+        raise ValueError(Л("файл должен быть JSON-объектом", "the file must be a JSON object"))
     if not isinstance(данные.get("title"), str) or not данные["title"].strip():
-        raise ValueError('нет поля "title" (название задания)')
+        raise ValueError(Л('нет поля "title" (название задания)', 'missing field "title" (the name of the task set)'))
+    if данные.get("lang", "ru") not in ("ru", "en"):
+        raise ValueError(Л('"lang" должно быть "ru" или "en"', '"lang" must be "ru" or "en"'))
     if not isinstance(данные.get("general", ""), str):
         raise ValueError('"general" (общее для вкладки «О задании») должно быть строкой')
     вопросы = данные.get("questions")
     if not isinstance(вопросы, list) or not вопросы:
-        raise ValueError('нет списка "questions" (задач)')
+        raise ValueError(Л('нет списка "questions" (задач)', 'missing list "questions"'))
     for номер, вопрос in enumerate(вопросы, start=1):
         if not isinstance(вопрос, dict) or not isinstance(вопрос.get("text"), str):
-            raise ValueError(f"задача {номер}: нет текста условия")
+            raise ValueError(Л(f"задача {номер}: нет текста условия", f"question {номер}: no task text"))
         тип = вопрос.get("type")
         if тип == "expression":
             if type(вопрос.get("expected")) not in (int, float, str):
                 raise ValueError(f'задача {номер}: "expected" должно быть числом или строкой')
             for оператор in вопрос.get("required", []):
                 if оператор not in ОПЕРАТОРЫ:
-                    raise ValueError(f"задача {номер}: неизвестный оператор {оператор!r}")
+                    raise ValueError(Л(f"задача {номер}: неизвестный оператор {оператор!r}", f"question {номер}: unknown operator {оператор!r}"))
         elif тип == "text":
             принимаемые = вопрос.get("accepted")
             if not isinstance(принимаемые, list) or not принимаемые or not all(isinstance(x, str) for x in принимаемые):
@@ -115,7 +128,7 @@ def проверить_формат(данные):
             for поле in ("inputs", "required_text"):
                 значение = вопрос.get(поле, [])
                 if not isinstance(значение, list) or not all(isinstance(x, str) for x in значение):
-                    raise ValueError(f'задача {номер}: "{поле}" должно быть списком строк')
+                    raise ValueError(Л(f'задача {номер}: "{поле}" должно быть списком строк', f'question {номер}: "{поле}" must be a list of strings'))
         elif тип == "script":
             проверить_формат_скрипта(номер, вопрос)
         elif тип == "shell":
@@ -126,31 +139,31 @@ def проверить_формат(данные):
             for поле in ("uses_names", "required"):
                 значение = вопрос.get(поле, [])
                 if not isinstance(значение, list) or not all(isinstance(x, str) for x in значение):
-                    raise ValueError(f'задача {номер}: "{поле}" должно быть списком строк')
+                    raise ValueError(Л(f'задача {номер}: "{поле}" должно быть списком строк', f'question {номер}: "{поле}" must be a list of strings'))
             for оператор in вопрос.get("required", []):
                 if оператор not in ОПЕРАТОРЫ:
-                    raise ValueError(f"задача {номер}: неизвестный оператор {оператор!r}")
+                    raise ValueError(Л(f"задача {номер}: неизвестный оператор {оператор!r}", f"question {номер}: unknown operator {оператор!r}"))
         else:
-            raise ValueError(f"задача {номер}: неизвестный тип {тип!r} (нужен expression, text, code, script или shell)")
+            raise ValueError(Л(f"задача {номер}: неизвестный тип {тип!r} (нужен expression, text, code, script или shell)", f"question {номер}: unknown type {тип!r} (use script, or expression, text, code, shell)"))
 
 
 def проверить_формат_скрипта(номер, вопрос):
     """Проверка полей задачи типа script (скрипт с готовыми частями до и после кода пользователя)."""
     if not isinstance(вопрос.get("expected_output"), str) and not isinstance(вопрос.get("expected_error"), str):
-        raise ValueError(f'задача {номер}: нужно "expected_output" или "expected_error" (строка)')
+        raise ValueError(Л(f'задача {номер}: нужно "expected_output" или "expected_error" (строка)', f'question {номер}: "expected_output" or "expected_error" (a string) is required'))
     for поле in ("before", "after", "starter", "placeholder"):
         if not isinstance(вопрос.get(поле, ""), str):
-            raise ValueError(f'задача {номер}: "{поле}" должно быть строкой')
+            raise ValueError(Л(f'задача {номер}: "{поле}" должно быть строкой', f'question {номер}: "{поле}" must be a string'))
     минимум = вопрос.get("min_lines", 3)
     if type(минимум) is not int or not 1 <= минимум <= 30:
         raise ValueError(f'задача {номер}: "min_lines" должно быть целым числом от 1 до 30')
     for поле in ("inputs", "required_text", "uses_names", "assigns", "required"):
         значение = вопрос.get(поле, [])
         if not isinstance(значение, list) or not all(isinstance(x, str) for x in значение):
-            raise ValueError(f'задача {номер}: "{поле}" должно быть списком строк')
+            raise ValueError(Л(f'задача {номер}: "{поле}" должно быть списком строк', f'question {номер}: "{поле}" must be a list of strings'))
     for оператор in вопрос.get("required", []):
         if оператор not in ОПЕРАТОРЫ:
-            raise ValueError(f"задача {номер}: неизвестный оператор {оператор!r}")
+            raise ValueError(Л(f"задача {номер}: неизвестный оператор {оператор!r}", f"question {номер}: unknown operator {оператор!r}"))
     константы = вопрос.get("consts", {})
     if not isinstance(константы, dict) or not all(isinstance(к, str) and type(з) in (int, float, str) for к, з in константы.items()):
         raise ValueError(f'задача {номер}: "consts" должно быть словарём «переменная: значение (число или текст)»')
@@ -371,14 +384,15 @@ def запустить_процесс(код, ввод):
     return процесс.stdout, процесс.stderr, процесс.returncode
 
 
-ТЕКСТ_ТАЙМАУТА = "Программа работала дольше 5 секунд. Возможно, цикл не заканчивается."
+def текст_таймаута():
+    return Л("Программа работала дольше 5 секунд. Возможно, цикл не заканчивается.", "The program ran for more than 5 seconds. Maybe a loop never ends.")
 
 
 def запустить_код(код, ввод):
     """Запускает код пользователя в отдельном процессе. Возвращает (stdout, текст_ошибки)."""
     вывод, ошибки, возврат = запустить_процесс(код, ввод)
     if возврат is None:
-        return "", ТЕКСТ_ТАЙМАУТА
+        return "", текст_таймаута()
     ошибка = ""
     if возврат != 0:
         строки = [с for с in ошибки.strip().splitlines() if с.strip()]
@@ -396,7 +410,7 @@ def проверить_код(вопрос, код):
     for фрагмент in вопрос.get("required_text", []):
         if фрагмент not in код:
             return {"ok": False, "reason": f"нет «{фрагмент}»",
-                    "message": f"Неверно: в решении должно быть «{фрагмент}»."}
+                    "message": Л(f"Неверно: в решении должно быть «{фрагмент}».", f"Incorrect: the solution must contain \"{фрагмент}\".")}
     вывод, ошибка = запустить_код(код, вопрос.get("inputs", []))
     if ошибка:
         return {"ok": False, "reason": f"ошибка: {ошибка}", "output": вывод,
@@ -436,13 +450,14 @@ def понятная_ошибка(текст_ошибки, скрипт, до, �
                 номер = int(совпало.group(2))
                 место = f", in {совпало.group(3)}" if совпало.group(3) else ""
                 готовая = номер <= до or номер > до + строк_пользователя
-                итог.append(f'  File "решение.py", line {номер}{место}' + ("   <- готовая часть" if готовая else ""))
+                итог.append(f'  File "{Л("решение.py", "solution.py")}", line {номер}{место}' + ("   <- " + Л("готовая часть", "ready part") if готовая else ""))
                 if 1 <= номер <= len(строки_кода):
                     итог.append("    " + строки_кода[номер - 1].strip())
         elif строка.strip():
             заключение.append(строка)
-    if any("<- готовая часть" in с for с in итог):
-        заключение.append("Ошибка найдена в готовой части, а её менять нельзя. Причина в коде рядом: проверь свои строки.")
+    if any(с.endswith(("<- готовая часть", "<- ready part")) for с in итог):
+        заключение.append(Л("Ошибка найдена в готовой части, а её менять нельзя. Причина в коде рядом: проверь свои строки.",
+                            "The error was found in the ready part, which cannot be changed. The cause is in nearby code: check your own lines."))
     return "\n".join(итог + заключение)
 
 
@@ -460,11 +475,11 @@ def выполнить_скрипт_задачи(вопрос, ответ):
     скрипт, до, польз = собрать_скрипт(вопрос, ответ)
     вывод, ошибки, возврат = запустить_процесс(скрипт, вопрос.get("inputs", []))
     if возврат is None:
-        return {"console": вывод + ТЕКСТ_ТАЙМАУТА, "error": True, "stdout": вывод, "type": "Timeout"}
+        return {"console": вывод + текст_таймаута(), "error": True, "stdout": вывод, "type": "Timeout"}
     if возврат == 0:
-        return {"console": вывод if вывод.strip() else "(программа ничего не вывела)", "error": False,
+        return {"console": вывод if вывод.strip() else Л("(программа ничего не вывела)", "(the program printed nothing)"), "error": False,
                 "stdout": вывод, "type": ""}
-    красиво = понятная_ошибка(ошибки, скрипт, до, польз) or "программа завершилась с ошибкой"
+    красиво = понятная_ошибка(ошибки, скрипт, до, польз) or Л("программа завершилась с ошибкой", "the program ended with an error")
     консоль = вывод + ("\n" if вывод and not вывод.endswith("\n") else "") + красиво
     return {"console": консоль, "error": True, "stdout": вывод, "type": название_ошибки(ошибки)}
 
@@ -481,32 +496,32 @@ def имена_в_коде(код, ответ_пользователя):
 
 def проверить_скрипт(вопрос, ответ):
     if not ответ.strip():
-        return {"ok": False, "message": "Напиши код.", "reason": "пусто", "console": "Напиши код.", "console_error": True}
+        return {"ok": False, "message": Л("Напиши код.", "Write some code."), "reason": "пусто", "console": Л("Напиши код.", "Write some code."), "console_error": True}
     for фрагмент in вопрос.get("required_text", []):
         if фрагмент not in ответ:
             return {"ok": False, "reason": f"нет «{фрагмент}»",
-                    "message": f"Неверно: в решении должно быть «{фрагмент}»."}
+                    "message": Л(f"Неверно: в решении должно быть «{фрагмент}».", f"Incorrect: the solution must contain \"{фрагмент}\".")}
     результат = выполнить_скрипт_задачи(вопрос, ответ)
     итог = {"console": результат["console"], "console_error": bool(результат["error"])}
     ждём_ошибку = вопрос.get("expected_error")
     if ждём_ошибку:
         if результат["type"] == ждём_ошибку:
-            итог.update(ok=True, reason="ВЕРНО", message=f"Верно! Python остановился и показал ошибку {ждём_ошибку}.")
+            итог.update(ok=True, reason="ВЕРНО", message=Л(f"Верно! Python остановился и показал ошибку {ждём_ошибку}.", f"Correct! Python stopped and showed the error {ждём_ошибку}."))
         elif результат["error"]:
             итог.update(ok=False, reason=f"другая ошибка {результат['type']}",
-                        message=f"Неверно: ошибка есть, но другая ({результат['type']}). Нужна ошибка, о которой сказано в условии.")
+                        message=Л(f"Неверно: ошибка есть, но другая ({результат['type']}). Нужна ошибка, о которой сказано в условии.", f"Incorrect: there is an error, but a different one ({результат['type']}). The task asks for a specific error."))
         else:
             итог.update(ok=False, reason="ошибки не было",
-                        message="Неверно: Python выполнил код без ошибки. Нужен код, который Python выполнить не сможет.")
+                        message=Л("Неверно: Python выполнил код без ошибки. Нужен код, который Python выполнить не сможет.", "Incorrect: Python ran the code without an error. The task needs code that Python cannot run."))
         return итог
     if результат["error"]:
         итог.update(ok=False, reason=f"ошибка {результат['type']}",
-                    message="Python остановился с ошибкой. Прочитай последнюю строку в консоли: в ней написано, что именно не так.")
+                    message=Л("Python остановился с ошибкой. Прочитай последнюю строку в консоли: в ней написано, что именно не так.", "Python stopped with an error. Read the last line in the console: it says what is wrong."))
         return итог
     if нормализовать(результат["stdout"]) != нормализовать(вопрос["expected_output"]):
-        сообщение = "Неверно: программа вывела не то, что требуется."
+        сообщение = Л("Неверно: программа вывела не то, что требуется.", "Incorrect: the program printed something different from what is required.")
         if re.search(r"\bprint\b", ответ) and "print" in (вопрос.get("before", "") + вопрос.get("after", "")):
-            сообщение += " Вывод в этом задании уже подготовлен в готовой части, писать свой `print` не нужно."
+            сообщение += Л(" Вывод в этом задании уже подготовлен в готовой части, писать свой `print` не нужно.", " The output in this task is already prepared in the ready part, so there is no need to write your own `print`.")
         итог.update(ok=False, reason="неверный вывод", message=сообщение)
         return итог
     дерево = имена_в_коде(собрать_скрипт(вопрос, ответ)[0], ответ)
@@ -518,7 +533,7 @@ def проверить_скрипт(вопрос, ответ):
         созданные = загруженные = использованные = set()
     for имя in вопрос.get("assigns", []):
         if имя not in созданные:
-            итог.update(ok=False, reason=f"нет переменной {имя}", message=f"Неверно: переменная {имя} не создана.")
+            итог.update(ok=False, reason=f"нет переменной {имя}", message=Л(f"Неверно: переменная {имя} не создана.", f"Incorrect: the variable {имя} was not created."))
             return итог
     for имя, значение in вопрос.get("consts", {}).items():
         найдено = any(
@@ -528,31 +543,36 @@ def проверить_скрипт(вопрос, ответ):
             for у in (ast.walk(дерево) if дерево is not None else []))
         if not найдено:
             итог.update(ok=False, reason=f"{имя}: нет значения из условия",
-                        message=f"Вывод верный, но в переменную {имя} нужно положить значение из условия, записанное так, как в условии: число без кавычек, текст в кавычках.")
+                        message=Л(f"Вывод верный, но в переменную {имя} нужно положить значение из условия, записанное так, как в условии: число без кавычек, текст в кавычках.",
+                                  f"The output is correct, but the variable {имя} must be given the value from the task, written as in the task: a number without quotes, text in quotes."))
             return итог
     for имя, сколько in вопрос.get("min_assigns", {}).items():
         раз = sum(1 for у in (ast.walk(дерево) if дерево is not None else []) if isinstance(у, ast.Name) and isinstance(у.ctx, ast.Store) and у.id == имя)
         if раз < сколько:
             итог.update(ok=False, reason=f"{имя}: присвоено {раз} раз",
-                        message=f"Вывод верный, но по условию в переменную {имя} нужно положить значение {сколько} раза подряд: сначала первое, потом замена. Сейчас в коде таких строк меньше.")
+                        message=Л(f"Вывод верный, но по условию в переменную {имя} нужно положить значение {сколько} раза подряд: сначала первое, потом замена. Сейчас в коде таких строк меньше.",
+                                  f"The output is correct, but the task needs the variable {имя} to be assigned a value {сколько} times in a row: first one value, then a replacement. There are fewer such lines in the code."))
             return итог
     for имя in вопрос.get("uses_names", []):
         if имя not in загруженные:
             итог.update(ok=False, reason=f"{имя} не используется",
-                        message=f"Вывод верный, но переменная {имя} должна участвовать в вычислении, а не быть набрана готовым значением.")
+                        message=Л(f"Вывод верный, но переменная {имя} должна участвовать в вычислении, а не быть набрана готовым значением.",
+                                  f"The output is correct, but the variable {имя} must take part in the calculation instead of being typed as a ready value."))
             return итог
     нужные = {ОПЕРАТОРЫ[о] for о in вопрос.get("required", [])}
     if not нужные <= использованные:
         итог.update(ok=False, reason="операторы не те",
-                    message="Вывод верный, но программа ждёт вычисление, а не готовое значение. "
-                            "Запиши, что и чем нужно посчитать, и используй подходящие знаки (они в справке).")
+                    message=Л("Вывод верный, но программа ждёт вычисление, а не готовое значение. "
+                              "Запиши, что и чем нужно посчитать, и используй подходящие знаки (они в справке).",
+                              "The output is correct, but the program expects a calculation, not a ready value. "
+                              "Write what to calculate and use the right operators (they are in the help)."))
         return итог
     for фрагмент, предел in вопрос.get("max_text", {}).items():
         if ответ.count(фрагмент) > предел:
             итог.update(ok=False, reason=f"«{фрагмент}» чаще {предел} раз",
-                        message=f"Вывод верный, но нарушено ограничение из условия: «{фрагмент}» можно написать не больше {предел} раз.")
+                        message=Л(f"Вывод верный, но нарушено ограничение из условия: «{фрагмент}» можно написать не больше {предел} раз.", f"The output is correct, but a rule of the task is broken: \"{фрагмент}\" may be written at most {предел} times."))
             return итог
-    итог.update(ok=True, reason="ВЕРНО", message="Верно!")
+    итог.update(ok=True, reason="ВЕРНО", message=Л("Верно!", "Correct!"))
     return итог
 
 
@@ -638,7 +658,7 @@ def показ_значения(значение):
 
 def проверить_оболочку(вопрос, код):
     if not код.strip():
-        return {"ok": False, "message": "Напиши код.", "reason": "пусто", "console": "Напиши код.", "console_error": True}
+        return {"ok": False, "message": Л("Напиши код.", "Write some code."), "reason": "пусто", "console": Л("Напиши код.", "Write some code."), "console_error": True}
     try:
         дерево = ast.parse(код)
     except SyntaxError as ошибка:
@@ -649,12 +669,12 @@ def проверить_оболочку(вопрос, код):
     ждём_ошибку = вопрос.get("expected_error")
     if ждём_ошибку:
         if результат["error"] == ждём_ошибку:
-            итог.update(ok=True, reason="ВЕРНО", message=f"Верно! Python остановился и показал ошибку {ждём_ошибку}.")
+            итог.update(ok=True, reason="ВЕРНО", message=Л(f"Верно! Python остановился и показал ошибку {ждём_ошибку}.", f"Correct! Python stopped and showed the error {ждём_ошибку}."))
         elif результат["error"]:
             итог.update(ok=False, reason=f"другая ошибка {результат['error']}",
                         message=f"Неверно: ошибка есть, но другая ({результат['error']}). Нужна ошибка, о которой сказано в условии.")
         else:
-            итог.update(ok=False, reason="ошибки не было", message="Неверно: Python выполнил код без ошибки. Нужен код, который Python выполнить не сможет.")
+            итог.update(ok=False, reason="ошибки не было", message=Л("Неверно: Python выполнил код без ошибки. Нужен код, который Python выполнить не сможет.", "Incorrect: Python ran the code without an error. The task needs code that Python cannot run."))
         return итог
     if результат["error"]:
         итог.update(ok=False, reason=f"ошибка {результат['error']}",
@@ -665,7 +685,7 @@ def проверить_оболочку(вопрос, код):
     загруженные = {у.id for у in ast.walk(дерево) if isinstance(у, ast.Name) and isinstance(у.ctx, ast.Load)}
     for имя, ожидается in вопрос.get("expected_vars", {}).items():
         if имя not in результат["vars"]:
-            итог.update(ok=False, reason=f"нет переменной {имя}", message=f"Неверно: переменная {имя} не создана.")
+            итог.update(ok=False, reason=f"нет переменной {имя}", message=Л(f"Неверно: переменная {имя} не создана.", f"Incorrect: the variable {имя} was not created."))
             return итог
         if not одинаково(результат["vars"][имя], ожидается):
             итог.update(ok=False, reason=f"значение {имя} неверное",
@@ -750,9 +770,9 @@ def получить_вопрос(id_задания, номер):
     задания, _ = все_задания()
     задание = задания.get(id_задания)
     if задание is None:
-        raise KeyError("такого задания нет")
+        raise KeyError(Л("такого задания нет", "no such task set"))
     if not (isinstance(номер, int) and 0 <= номер < len(задание["questions"])):
-        raise KeyError("такой задачи нет")
+        raise KeyError(Л("такой задачи нет", "no such question"))
     return задание["questions"][номер]
 
 
@@ -760,16 +780,16 @@ def проверить_ответ(id_задания, номер, ответ):
     задания, _ = все_задания()
     задание = задания.get(id_задания)
     if задание is None:
-        raise KeyError("такого задания нет")
+        raise KeyError(Л("такого задания нет", "no such task set"))
     вопросы = задание["questions"]
     if not (isinstance(номер, int) and 0 <= номер < len(вопросы)):
-        raise KeyError("такой задачи нет")
+        raise KeyError(Л("такой задачи нет", "no such question"))
     вопрос = вопросы[номер]
     ответ = убрать_приглашение(ответ)
     with БЛОКИРОВКА:
         прогресс = прочитать_прогресс(id_задания)
         if str(номер) in прогресс["solved"]:
-            return {"ok": True, "message": "Эта задача уже решена.", "finished": len(прогресс["solved"]) == len(вопросы)}
+            return {"ok": True, "message": Л("Эта задача уже решена.", "This question is already solved."), "finished": len(прогресс["solved"]) == len(вопросы)}
         if вопрос["type"] == "expression":
             итог = проверить_выражение(вопрос, ответ)
         elif вопрос["type"] == "text":
@@ -796,9 +816,9 @@ def проверить_ответ(id_задания, номер, ответ):
                 итог["finished"] = True
         else:
             if попытки >= 6:
-                итог["hint"] = "Если не получается, перечитай «Условие», «О задании» и «Справку» ещё раз или попроси помощи."
+                итог["hint"] = Л("Если не получается, перечитай «Условие», «О задании» и «Справку» ещё раз или попроси помощи.", "If it does not work, read the Task, About and Help tabs once more or ask for help.")
             elif попытки >= 3 and (задание.get("help") or задание.get("reference")):
-                итог["hint"] = "Загляни во вкладку «Справка» под условием: там есть то, что пригодится."
+                итог["hint"] = Л("Загляни во вкладку «Справка» под условием: там есть то, что пригодится.", "Look at the Help tab under the task: it has what you need.")
         сохранить_прогресс(id_задания, прогресс)
     итог.pop("reason", None)
     return итог
@@ -829,13 +849,13 @@ def сбросить(id_задания):
 def импортировать(имя_файла, содержимое):
     имя = Path(имя_файла).stem.strip()
     if not имя or not re.fullmatch(r"[\w\- ]+", имя):
-        raise ValueError("название файла может содержать только буквы, цифры, пробел, _ и -")
+        raise ValueError(Л("название файла может содержать только буквы, цифры, пробел, _ и -", "the file name may contain only letters, digits, space, _ and -"))
     данные = json.loads(содержимое)
     проверить_формат(данные)
     ПАПКА_ЗАДАНИЙ.mkdir(parents=True, exist_ok=True)
     путь = ПАПКА_ЗАДАНИЙ / f"{имя}.json"
     if путь.exists():
-        raise ValueError(f"задание «{имя}» уже есть в папке Задания")
+        raise ValueError(Л(f"задание «{имя}» уже есть в папке Задания", f"a task set named \"{имя}\" already exists in the tasks folder"))
     путь.write_text(json.dumps(данные, ensure_ascii=False, indent=2), encoding="utf-8")
     logging.info("добавлено задание %s", путь.name)
     return имя
@@ -880,6 +900,7 @@ class Обработчик(BaseHTTPRequestHandler):
 
     # --- GET ---
     def do_GET(self):
+        КОНТЕКСТ.lang = "en" if self.headers.get("X-Lang") == "en" else "ru"
         адрес = urlparse(self.path)
         if not self._хост_верный():
             return self._ответ(403, {"error": "неверный адрес"})
@@ -890,11 +911,13 @@ class Обработчик(BaseHTTPRequestHandler):
                                        "text/plain; charset=utf-8")
                 return self._ответ(200, ФАЙЛ_ИНТЕРФЕЙСА.read_bytes(), "text/html; charset=utf-8")
             if not self._токен_верный(self.headers.get("X-Token", "")):
-                return self._ответ(403, {"error": "нет доступа"})
+                return self._ответ(403, {"error": Л("нет доступа", "access denied")})
             if адрес.path == "/api/tasks":
                 задания, ошибки = все_задания()
                 список = []
                 for id_задания, задание in задания.items():
+                    if задание.get("lang") not in (None, язык()):  # задание на другом языке не показываем
+                        continue
                     вид = публичный_вид(задание)
                     список.append({"id": id_задания, "title": вид["title"], "topic": вид["topic"],
                                    "total": len(вид["questions"]), "solved": len(вид["solved"]),
@@ -907,22 +930,23 @@ class Обработчик(BaseHTTPRequestHandler):
                 id_задания = parse_qs(адрес.query).get("id", [""])[0]
                 задания, _ = все_задания()
                 if id_задания not in задания:
-                    return self._ответ(404, {"error": "такого задания нет"})
+                    return self._ответ(404, {"error": Л("такого задания нет", "no such task set")})
                 return self._ответ(200, публичный_вид(задания[id_задания]))
-            return self._ответ(404, {"error": "не найдено"})
+            return self._ответ(404, {"error": Л("не найдено", "not found")})
         except Exception as ошибка:
             logging.exception("ошибка GET %s", self.path)
             return self._ответ(500, {"error": f"ошибка программы: {ошибка}"})
 
     # --- POST ---
     def do_POST(self):
+        КОНТЕКСТ.lang = "en" if self.headers.get("X-Lang") == "en" else "ru"
         адрес = urlparse(self.path)
         if not self._хост_верный() or not self._токен_верный(self.headers.get("X-Token", "")):
-            return self._ответ(403, {"error": "нет доступа"})
+            return self._ответ(403, {"error": Л("нет доступа", "access denied")})
         try:
             длина = int(self.headers.get("Content-Length", "0"))
             if длина > 1_000_000:
-                return self._ответ(413, {"error": "слишком большой запрос"})
+                return self._ответ(413, {"error": Л("слишком большой запрос", "request too large")})
             тело = json.loads(self.rfile.read(длина) or b"{}")
             global ПОСЛЕДНИЙ_ПИНГ
             if адрес.path == "/api/ping":
@@ -935,7 +959,7 @@ class Обработчик(BaseHTTPRequestHandler):
             if адрес.path == "/api/reset":
                 задания, _ = все_задания()
                 if тело.get("id") not in задания:
-                    return self._ответ(404, {"error": "такого задания нет"})
+                    return self._ответ(404, {"error": Л("такого задания нет", "no such task set")})
                 сбросить(тело["id"])
                 return self._ответ(200, {"ok": True})
             if адрес.path == "/api/import":
@@ -946,12 +970,12 @@ class Обработчик(BaseHTTPRequestHandler):
                 if тело.get("what") == "log":
                     путь = ПАПКА_РЕЗУЛЬТАТОВ / id_задания / "лог.txt"
                     if id_задания not in задания or not путь.exists():
-                        return self._ответ(200, {"ok": False, "message": "Лога пока нет: ещё не было ни одной попытки."})
+                        return self._ответ(200, {"ok": False, "message": Л("Лога пока нет: ещё не было ни одной попытки.", "No log yet: there have been no attempts.")})
                 else:
                     путь = ПАПКА_РЕЗУЛЬТАТОВ
                     путь.mkdir(parents=True, exist_ok=True)
                 return self._ответ(200, {"ok": открыть_в_системе(путь)})
-            return self._ответ(404, {"error": "не найдено"})
+            return self._ответ(404, {"error": Л("не найдено", "not found")})
         except (KeyError, ValueError) as ошибка:
             return self._ответ(400, {"error": str(ошибка.args[0]) if ошибка.args else "ошибка"})
         except Exception as ошибка:

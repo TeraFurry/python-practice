@@ -1,0 +1,159 @@
+{
+  "title": "Operators",
+  "topic": "Operators",
+  "lang": "en",
+  "general": "Read the task: it says what to do, what the result must be and where to look. Under the task there is a Help tab: the first item is the Lesson, then steps with examples. The way to solve the task is not written in the help; you find it yourself.\nType your code in the field. Grey lines with a lock cannot be changed. Press Run: the result appears in the console. You can try as many times as you like, it does not count as an attempt. When the result is what the task asks for, press Check: the program says correct or incorrect and shows what you got. It never shows the right answer.\nIf the field already contains a line, first press Run and look at what it prints, then change it.",
+  "help": [
+    {
+      "h": "Lesson: operators (Al Sweigart's book, chapter 1)",
+      "t": "**Expression** is a line of numbers and signs between them, for example `2 + 2`. In the book such a sign is called an \"operator\". Python calculates the expression itself and shows one result; you do not have to calculate anything.\nThere are seven signs. Examples from table 1.1 of the book; on the right is what appears in the console:\n• `+` addition: `2 + 2` gives 4\n• `-` subtraction: `5 - 2` gives 3\n• `*` multiplication: `3 * 5` gives 15\n• `/` regular division, the result always has a dot: `22 / 8` gives 2.75\n• `//` division without a remainder, only the whole part is left: `22 // 8` gives 2\n• `%` remainder of a division: `22 % 8` gives 6\n• `**` power: `2 ** 3` gives 8\n**Order.** If there are several signs, first `**`, then `*` `/` `//` `%`, last `+` and `-`. Parentheses change the order: `2 + 3 * 6` gives 20, but `(2 + 3) * 6` gives 30.\n**The SyntaxError message** does not mean something is broken. The book says plainly: do not be afraid of errors, they do not harm the computer. It means the line is not written by the rules, for example a sign has no number after it: `5 +`.\nHow to study: first read the lesson, then repeat the examples by hand (it is remembered better), then fix the ready code, and finally write your own."
+    },
+    {
+      "h": "How to read the examples",
+      "t": "In the examples you see program code. Lines with an arrow → are what the program prints to the console; you do not type them. Everything after the sign `#` is a comment: a note for people. Python skips it and you do not type it. Lines with a lock 🔒 are the ready part. Every task has such a part: it is shown in grey next to the field and cannot be changed. It prints the result to the console like in a real program. How it works will be explained in a separate lesson. Every example works on its own: you can run it from scratch."
+    },
+    {
+      "h": "1. How the field works",
+      "t": "In the task you write only the expression itself. An expression is numbers and signs between them, for example `2 + 3`. Around the expression there are two ready lines: `print(` above and `)` below. Together with the expression they show the result in the console. You do not need to calculate anything: Python calculates. In \"fix\" questions the field already contains a line. Press Run and look at what it prints. Then change what is needed and run again. The signs of this topic are `+` `-` `*` `/` `//` `%` `**`. Steps 2–6 show what each one does. You can try as many times as you like: it does not count as an attempt.",
+      "code": "| print(            # ready part: opens the output\n2 + 3   # the expression: Python calculates it\n| )                # ready part: closes the output\n→ 5"
+    },
+    {
+      "h": "2. Addition, subtraction, multiplication",
+      "t": "Three signs for three operations: `+` addition, `-` subtraction, `*` multiplication (on the keyboard it is the asterisk). Spaces around a sign are optional, but it is easier to read with them.",
+      "code": "| print(            # ready part: opens the output\n7 + 5   # addition: 7 and 5\n| )                # ready part: closes the output\n| print(            # ready part: opens the output\n7 - 5   # subtraction: take 5 from 7\n| )                # ready part: closes the output\n| print(            # ready part: opens the output\n7 * 5   # multiplication: 7 times 5\n| )                # ready part: closes the output\n→ 12\n→ 2\n→ 35"
+    },
+    {
+      "h": "3. Regular division `/`",
+      "t": "The sign `/` divides one number by another. The result is always a number with a dot, even if it divides without a remainder.",
+      "code": "| print(            # ready part: opens the output\n9 / 2   # 9 divided by 2\n| )                # ready part: closes the output\n→ 4.5"
+    },
+    {
+      "h": "4. Whole part of a division `//`",
+      "t": "The sign `//` also divides, but Python shows only the whole part: the remainder is dropped. For example, 20 divided by 6 is 3 and 2 left over. The sign `//` shows only 3.",
+      "code": "| print(            # ready part: opens the output\n20 // 6   # whole part of 20 divided by 6\n| )                # ready part: closes the output\n→ 3"
+    },
+    {
+      "h": "5. Remainder of a division `%`",
+      "t": "The sign `%` shows only the remainder, that is, what is left over. In the same example 20 divided by 6 is 3 and 2 left over. The sign `%` shows only 2.",
+      "code": "| print(            # ready part: opens the output\n20 % 6   # remainder of 20 divided by 6\n| )                # ready part: closes the output\n→ 2"
+    },
+    {
+      "h": "6. Power `**`",
+      "t": "The sign `**` raises a number to a power. The number on the right shows how many times the number on the left is multiplied by itself. `2 ** 3` means `2 * 2 * 2`.",
+      "code": "| print(            # ready part: opens the output\n2 ** 3   # 2 to the power of 3\n| )                # ready part: closes the output\n→ 8"
+    },
+    {
+      "h": "7. Order of operations and parentheses",
+      "t": "If an expression has several signs, Python does them in order: first `**`, then `*` `/` `//` `%`, last `+` and `-`. Parentheses change the order: what is in parentheses Python does first. In the example there are two separate ready parts, so the console shows two numbers.",
+      "code": "| print(            # ready part: opens the output\n3 + 2 * 5   # first the multiplication 2 * 5, then the addition\n| )                # ready part: closes the output\n| print(            # ready part: opens the output\n(3 + 2) * 5   # first the parentheses 3 + 2, then the multiplication\n| )                # ready part: closes the output\n→ 13\n→ 25"
+    },
+    {
+      "h": "8. If it says SyntaxError",
+      "t": "Python says `SyntaxError` when the line is not written by the rules of the language and it cannot understand what was meant. Causes: no number after a sign, two signs in a row, an unclosed parenthesis.\n• Wrong: `5 +` (no second number after the plus).\n• Right: `5 + 2`.\nWhat to check: is there a number after every sign, are there two signs in a row, are the parentheses closed. Sometimes Python points to a ready line (as in the example: the line with `)`). That is because it read to the end and understood that the line is not finished. Look for the cause in your own line above. Nothing is broken: read the message, fix the line and run again.",
+      "code": "| print(            # ready part: opens the output\n5 +   # error: no second number after the plus\n| )                # ready part: closes the output\n→   File \"solution.py\", line 3   <- ready part\n→     )\n→ SyntaxError: invalid syntax\n→ The error was found in the ready part, which cannot be changed. The cause is in nearby code: check your own lines."
+    }
+  ],
+  "questions": [
+    {
+      "type": "script",
+      "before": "print(",
+      "after": ")",
+      "min_lines": 1,
+      "expected_output": "2.75",
+      "placeholder": "Write an expression",
+      "required": [
+        "/"
+      ],
+      "text": "What to do: type `22 / 8` in the field and press Run. This is an example from the lesson.\nExpected result: the console shows `2.75`.\nWhere to look: Help, \"Lesson\".",
+      "about": "Practice: typing code by hand."
+    },
+    {
+      "type": "script",
+      "before": "print(",
+      "after": ")",
+      "min_lines": 1,
+      "expected_output": "6",
+      "placeholder": "Write an expression",
+      "required": [
+        "%"
+      ],
+      "text": "What to do: type `22 % 8` in the field and press Run. This is an example from the lesson.\nExpected result: the console shows `6`.\nWhere to look: Help, \"Lesson\".",
+      "about": "Practice: typing code by hand."
+    },
+    {
+      "type": "script",
+      "before": "print(",
+      "after": ")",
+      "min_lines": 1,
+      "expected_output": "430",
+      "placeholder": "Write an expression",
+      "starter": "40 + 90 - 300",
+      "required": [
+        "+"
+      ],
+      "text": "What to do: in the line `40 + 90 - 300` change one sign between the numbers; do not touch the numbers themselves.\nExpected result: the console shows `430`.\nWhere to look: Help, \"Lesson\" and step 2.",
+      "about": "Practice: how a sign between numbers changes the result."
+    },
+    {
+      "type": "script",
+      "before": "print(",
+      "after": ")",
+      "min_lines": 1,
+      "expected_output": "200.0",
+      "placeholder": "Write an expression",
+      "starter": "600 // 3",
+      "required": [
+        "/"
+      ],
+      "text": "What to do: in the line `600 // 3` change one sign between the numbers; do not touch the numbers themselves.\nExpected result: the console shows `200.0`.\nWhere to look: Help, \"Lesson\", steps 3 and 4.",
+      "about": "Practice: how a sign between numbers changes the result."
+    },
+    {
+      "type": "script",
+      "before": "print(",
+      "after": ")",
+      "min_lines": 1,
+      "expected_output": "2",
+      "placeholder": "Write an expression",
+      "starter": "25 / 10",
+      "required": [
+        "//"
+      ],
+      "text": "What to do: in the line `25 / 10` change one sign between the numbers; do not touch the numbers themselves.\nExpected result: the console shows `2`.\nWhere to look: Help, \"Lesson\", steps 3 and 4.",
+      "about": "Practice: how a sign between numbers changes the result."
+    },
+    {
+      "type": "script",
+      "before": "print(",
+      "after": ")",
+      "min_lines": 1,
+      "expected_output": "81",
+      "placeholder": "Write an expression",
+      "starter": "3 * 4",
+      "required": [
+        "**"
+      ],
+      "text": "What to do: in the line `3 * 4` change one sign between the numbers; do not touch the numbers themselves.\nExpected result: the console shows `81`.\nWhere to look: Help, \"Lesson\", steps 2 and 6.",
+      "about": "Practice: how a sign between numbers changes the result."
+    },
+    {
+      "type": "script",
+      "before": "print(",
+      "after": ")",
+      "min_lines": 1,
+      "expected_output": "20",
+      "placeholder": "Write an expression",
+      "starter": "2 + 3 * 4",
+      "required": [
+        "+",
+        "*"
+      ],
+      "required_text": [
+        "(",
+        ")"
+      ],
+      "text": "What to do: the field contains the line `2 + 3 * 4`. Change it so that Python does the addition first and the multiplication second. Do not change the numbers and signs.\nExpected result: the console shows `20`.\nWhere to look: Help, \"Lesson\", step 7.",
+      "about": "Practice: order of operations in a line with several signs."
+    }
+  ]
+}
