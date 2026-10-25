@@ -1,0 +1,536 @@
+<!doctype html>
+<html lang="ru">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Практика Python</title>
+<style>
+  :root {
+    --bg: #f4f3ef; --panel: #ffffff; --ink: #1d2125; --muted: #667079; --line: #dfddd5;
+    --accent: #2f6f5e; --accent-ink: #ffffff; --accent-soft: #e3efeb;
+    --ok: #1f7a4d; --ok-bg: #e2f3ea; --bad: #b3361f; --bad-bg: #fbe9e5;
+    --editor-bg: #fbfaf7; --gutter: #8a9199; --ready-bg: #ecebe4;
+    --con-bg: #17191c; --con-ink: #e6e4df; --con-dim: #8c949c; --con-err: #ff8f7a; --con-line: #2c3034;
+    --mono: "Cascadia Mono", Consolas, "Courier New", monospace;
+    --t-kw: #8a3fc4; --t-str: #2e7d32; --t-num: #b25e00; --t-op: #0b7285; --t-fn: #1c62b9; --t-bi: #9a6700; --t-cm: #7a828a;
+    --d-kw: #c792ea; --d-str: #98c379; --d-num: #e5a05c; --d-op: #56b6c2; --d-fn: #61afef; --d-bi: #e5c07b; --d-cm: #7f848e;
+    --label: #2f6f5e; --mark: #fff1b8; --mark-ink: #4a3b00; --chip: #e9e6dc;
+  }
+  @media (prefers-color-scheme: dark) {
+    :root {
+      --bg: #15171a; --panel: #1e2124; --ink: #e8e6e1; --muted: #9aa0a6; --line: #30353a;
+      --accent: #5fb39b; --accent-ink: #0f1a17; --accent-soft: #213630;
+      --ok: #6fd3a0; --ok-bg: #1c3227; --bad: #ff8f7a; --bad-bg: #3a2420;
+      --editor-bg: #16181b; --gutter: #6b727a; --ready-bg: #202428;
+      --t-kw: #c792ea; --t-str: #98c379; --t-num: #e5a05c; --t-op: #56b6c2; --t-fn: #61afef; --t-bi: #e5c07b; --t-cm: #7f848e;
+      --label: #7ed1b8; --mark: #4a3f12; --mark-ink: #ffe9a0; --chip: #2a2f33;
+      --con-bg: #0e0f11; --con-ink: #e6e4df; --con-dim: #7d858d; --con-err: #ff8f7a; --con-line: #26292d;
+    }
+  }
+  * { box-sizing: border-box; }
+  html, body { height: 100%; }
+  body { margin: 0; background: var(--bg); color: var(--ink); font: 15px/1.5 "Segoe UI", system-ui, sans-serif; }
+  button { font: inherit; color: inherit; }
+  .app { display: grid; grid-template-columns: 250px 1fr; height: 100vh; }
+
+  /* ---------- слева ---------- */
+  aside { background: var(--panel); border-right: 1px solid var(--line); display: flex; flex-direction: column; min-height: 0; }
+  .brand { padding: 20px 20px 14px; font-weight: 700; font-size: 17px; }
+  .brand small { display: block; color: var(--muted); font-weight: 400; font-size: 13px; }
+  #list { flex: 1; overflow-y: auto; padding: 4px 10px; display: flex; flex-direction: column; gap: 2px; }
+  #list button { width: 100%; text-align: left; border: 0; background: transparent; padding: 9px 12px; border-radius: 8px; cursor: pointer; }
+  #list button:hover { background: var(--accent-soft); }
+  #list button[aria-current="true"] { background: var(--accent-soft); box-shadow: inset 3px 0 0 var(--accent); }
+  #list .name { display: block; font-weight: 600; }
+  #list .sub { display: block; font-size: 13px; color: var(--muted); }
+  #list .done .sub { color: var(--ok); }
+  #list .none { padding: 8px 12px; font-size: 13px; color: var(--muted); }
+  .menu { border-top: 1px solid var(--line); padding: 8px 10px; }
+  .menu summary { cursor: pointer; padding: 8px 12px; border-radius: 8px; color: var(--muted); font-size: 14px; list-style: none; }
+  .menu summary::-webkit-details-marker { display: none; }
+  .menu summary:hover { background: var(--accent-soft); }
+  .menu .items { display: flex; flex-direction: column; padding-top: 4px; }
+  .menu .items button { text-align: left; border: 0; background: transparent; padding: 7px 12px; border-radius: 8px; cursor: pointer; font-size: 14px; color: var(--muted); }
+  .menu .items button:hover { background: var(--accent-soft); color: var(--ink); }
+
+  /* ---------- справа ---------- */
+  main { overflow-y: auto; padding: 28px 40px 28px; }
+  .wrap { max-width: 860px; margin: 0 auto; display: flex; flex-direction: column; gap: 18px; min-height: 100%; }
+  .head { display: flex; align-items: flex-end; justify-content: space-between; gap: 16px; flex-wrap: wrap; }
+  .head .topic { font-size: 13px; color: var(--accent); font-weight: 600; letter-spacing: .04em; text-transform: uppercase; }
+  .head h1 { margin: 2px 0 0; font-size: 24px; line-height: 1.25; }
+  .steps { display: flex; align-items: center; gap: 6px; color: var(--muted); font-size: 14px; }
+  .dot { width: 10px; height: 10px; border-radius: 50%; background: var(--line); }
+  .dot.done { background: var(--ok); }
+  .dot.now { background: var(--accent); box-shadow: 0 0 0 3px var(--accent-soft); }
+  .steps .txt { margin-left: 8px; }
+
+  .task { background: var(--panel); border: 1px solid var(--line); border-radius: 12px; padding: 18px 22px; }
+  .task .lab, .lab { font-size: 12px; font-weight: 600; letter-spacing: .06em; text-transform: uppercase; color: var(--muted); margin-bottom: 6px; }
+  .task p { margin: 0; white-space: pre-line; font-size: 17px; line-height: 1.6; }
+  .tabs { display: flex; gap: 8px; margin-top: 14px; padding-top: 12px; border-top: 1px solid var(--line); }
+  .tab { border: 1px solid var(--line); background: transparent; color: var(--muted); padding: 6px 14px; border-radius: 8px; cursor: pointer; font-size: 14px; }
+  .tab:hover { border-color: var(--accent); color: var(--ink); }
+  .tab[aria-expanded="true"] { background: var(--accent-soft); border-color: var(--accent); color: var(--ink); }
+  .panel { margin-top: 12px; padding: 14px 16px; background: var(--editor-bg); border: 1px solid var(--line); border-radius: 10px; font-size: 14.5px; max-height: 300px; overflow-y: auto; }
+  .panel p { margin: 0 0 8px; white-space: pre-line; font-size: 14.5px; line-height: 1.55; color: var(--ink); }
+  .panel p:last-child { margin-bottom: 0; }
+  .panel .sec { margin-bottom: 14px; }
+  .panel .sec:last-child { margin-bottom: 0; }
+  .panel .sec h4 { margin: 0 0 4px; font-size: 14.5px; }
+  .panel pre { margin: 6px 0 0; padding: 8px 12px; background: var(--con-bg); color: var(--con-ink); border-radius: 8px; font: 14px/1.5 var(--mono); white-space: pre-wrap; }
+
+  /* ---------- оформление условия ---------- */
+  .task p .label, .panel p .label { color: var(--label); font-weight: 700; }
+  .panel p b { font-weight: 700; }
+  .panel p u { text-decoration: underline; text-decoration-thickness: 2px; text-underline-offset: 3px; text-decoration-color: var(--label); }
+  .panel p code { font: 14.5px var(--mono); background: var(--chip); padding: 1px 7px; border-radius: 6px; letter-spacing: .14em; }
+  .panel p code { white-space: nowrap; }
+  .panel p mark { background: var(--mark); color: var(--mark-ink); padding: 0 4px; border-radius: 4px; }
+  .panel p { line-height: 1.7; }
+  .task p b { font-weight: 700; }
+  .task p u { text-decoration: underline; text-decoration-thickness: 2px; text-underline-offset: 3px; text-decoration-color: var(--label); }
+  .task p code { letter-spacing: .08em; font: 15.5px var(--mono); background: var(--chip); padding: 1px 7px; border-radius: 6px; word-break: break-all; }
+  .task p mark { background: var(--mark); color: var(--mark-ink); padding: 0 4px; border-radius: 4px; }
+
+  /* ---------- подсветка кода ---------- */
+  .code { position: relative; flex: 1; min-width: 0; }
+  .code pre.hl, .code textarea#answer { margin: 0; font: 16px/1.6 var(--mono); padding: 12px 14px; white-space: pre; tab-size: 4; letter-spacing: 0; }
+  .code pre.hl { position: absolute; inset: 0; overflow: hidden; pointer-events: none; color: var(--ink); }
+  .code textarea#answer { position: relative; display: block; width: 100%; height: 100%; border: 0; outline: 0; resize: none; overflow: auto; color: transparent; caret-color: var(--ink); background: transparent; }
+  .code textarea#answer::placeholder { color: var(--muted); opacity: .8; }
+  .code textarea#answer::selection { background: var(--accent-soft); color: transparent; }
+  .tk-kw { color: var(--t-kw); font-weight: 600; } .tk-str { color: var(--t-str); } .tk-num { color: var(--t-num); }
+  .tk-op { color: var(--t-op); font-weight: 600; } .tk-fn { color: var(--t-fn); } .tk-bi { color: var(--t-bi); } .tk-cm { color: var(--t-cm); font-style: italic; }
+  .tk-pr { color: var(--con-dim); }
+  .tk-ar { color: #e5c07b; font-weight: 700; }
+  .tk-ans { opacity: .95; }
+  .tk-ready { background: rgba(255,255,255,.09); border-left: 3px solid var(--con-dim); padding: 0 6px 0 4px; border-radius: 3px; }
+  .console pre.hlc, .panel pre { --t-kw: var(--d-kw); --t-str: var(--d-str); --t-num: var(--d-num); --t-op: var(--d-op); --t-fn: var(--d-fn); --t-bi: var(--d-bi); --t-cm: var(--d-cm); }
+  .editor { display: flex; background: var(--editor-bg); border: 1px solid var(--line); border-radius: 12px; overflow: hidden; }
+  .editor:focus-within { border-color: var(--accent); box-shadow: 0 0 0 3px var(--accent-soft); }
+  .gutter { padding: 12px 10px 12px 14px; text-align: right; color: var(--gutter); font: 16px/1.6 var(--mono); user-select: none; white-space: pre; overflow: hidden; border-right: 1px solid var(--line); min-width: 52px; }
+  .editor.script { flex-direction: column; }
+  .editor.script .part { display: flex; }
+  .editor.script .part.ready { background: var(--ready-bg); }
+  .editor.script .part.ready .gutter { opacity: .7; }
+  .editor.script .part pre.ro { margin: 0; flex: 1; min-width: 0; font: 16px/1.6 var(--mono); padding: 12px 14px; white-space: pre; overflow-x: auto; opacity: .8; }
+  .editor.script .part.ready.top pre.ro { padding-bottom: 6px; }
+  .editor.script .part.ready.bottom pre.ro { padding-top: 6px; }
+  .editor.script .part .gutter { border-right: 1px solid var(--line); }
+  .editor.script .part.ready.top .gutter { padding-bottom: 6px; }
+  .editor.script .part.ready.bottom .gutter { padding-top: 6px; }
+  .editor.script .part.mine .gutter { padding-top: 6px; padding-bottom: 6px; }
+  .editor.script .part.mine .code pre.hl, .editor.script .part.mine .code textarea#answer { padding-top: 6px; padding-bottom: 6px; }
+  .editor.script textarea#answer { height: auto; overflow: hidden; }
+  .ready-note { display: flex; gap: 8px; align-items: center; padding: 5px 14px; font-size: 12.5px; color: var(--muted); background: var(--ready-bg); border-bottom: 1px solid var(--line); }
+  .ready-note.bottom { border-top: 1px solid var(--line); border-bottom: 0; }
+  .toolbar { display: flex; gap: 10px; align-items: center; flex-wrap: wrap; }
+  .btn { border: 1px solid var(--line); background: var(--panel); padding: 9px 18px; border-radius: 9px; cursor: pointer; font-size: 15px; }
+  .btn:hover { border-color: var(--accent); }
+  .btn.primary { background: var(--accent); border-color: var(--accent); color: var(--accent-ink); font-weight: 600; }
+  .btn:disabled { opacity: .55; cursor: default; }
+  .btn:focus-visible, #list button:focus-visible, .menu summary:focus-visible { outline: 2px solid var(--accent); outline-offset: 2px; }
+  .keys { color: var(--muted); font-size: 13px; margin-left: auto; }
+
+  .console { background: var(--con-bg); border-radius: 12px; overflow: hidden; border: 1px solid var(--con-line); display: flex; flex-direction: column; }
+  .console .bar { display: flex; justify-content: space-between; padding: 7px 14px; border-bottom: 1px solid var(--con-line); color: var(--con-dim); font-size: 12px; letter-spacing: .06em; text-transform: uppercase; }
+  .console pre { margin: 0; padding: 14px 16px; min-height: 120px; max-height: 260px; overflow: auto; font: 15px/1.6 var(--mono); color: var(--con-ink); white-space: pre-wrap; word-break: break-word; }
+  .console pre.hlc { }
+  .console pre.empty { color: var(--con-dim); font-family: inherit; }
+  .console pre.err { color: var(--con-err); }
+  .verdict { padding: 11px 16px; font-size: 15px; border-top: 1px solid var(--con-line); }
+  .verdict.ok { background: var(--ok-bg); color: var(--ok); font-weight: 600; }
+  .verdict.bad { background: var(--bad-bg); color: var(--bad); }
+  .verdict .more { display: block; margin-top: 4px; font-weight: 400; color: var(--muted); font-size: 14px; }
+
+  .done-box { background: var(--ok-bg); color: var(--ok); border-radius: 12px; padding: 22px 24px; }
+  .done-box h2 { margin: 0 0 6px; font-size: 21px; }
+  .done-box p { margin: 0; color: var(--ink); }
+  .empty { margin: auto; text-align: center; color: var(--muted); max-width: 420px; }
+  .empty h2 { color: var(--ink); margin: 0 0 8px; font-size: 20px; }
+  .toast { position: fixed; bottom: 18px; left: 50%; transform: translateX(-50%); background: var(--ink); color: var(--bg); padding: 10px 18px; border-radius: 10px; max-width: 80vw; z-index: 9; }
+  @media (max-width: 760px) {
+    .app { grid-template-columns: 1fr; height: auto; }
+    aside { border-right: 0; border-bottom: 1px solid var(--line); }
+    main { padding: 18px 16px; }
+  }
+</style>
+</head>
+<body>
+<div class="app">
+  <aside>
+    <div class="brand">Практика Python<small>задания по темам</small></div>
+    <nav id="list"></nav>
+    <details class="menu">
+      <summary>Ещё</summary>
+      <div class="items">
+        <button id="m-log">Открыть лог</button>
+        <button id="m-res">Открыть папку результатов</button>
+        <button id="m-reset">Начать задание заново</button>
+        <button id="m-refresh">Обновить список</button>
+        <button id="m-add">Добавить задания из файла</button>
+      </div>
+      <input type="file" id="file" accept=".json,application/json" multiple hidden>
+    </details>
+  </aside>
+  <main id="main"></main>
+</div>
+<div id="toast" class="toast" hidden></div>
+
+<script>
+const TOKEN = new URLSearchParams(location.search).get('t') || '';
+let tasks = [], current = null, curId = null;
+
+function el(tag, attrs, ...kids) {
+  const e = document.createElement(tag);
+  for (const [k, v] of Object.entries(attrs || {})) {
+    if (k === 'class') e.className = v;
+    else if (k.startsWith('on')) e.addEventListener(k.slice(2), v);
+    else if (v === true) e.setAttribute(k, '');
+    else if (v !== false && v != null) e.setAttribute(k, v);
+  }
+  for (const kid of kids.flat()) if (kid != null) e.append(kid.nodeType ? kid : document.createTextNode(kid));
+  return e;
+}
+
+async function api(path, body) {
+  const opt = { headers: { 'X-Token': TOKEN } };
+  if (body !== undefined) {
+    opt.method = 'POST';
+    opt.headers['Content-Type'] = 'application/json';
+    opt.body = JSON.stringify(body);
+  }
+  const r = await fetch(path, opt);
+  const data = await r.json().catch(() => ({}));
+  if (!r.ok) throw new Error(data.error || ('Ошибка ' + r.status));
+  return data;
+}
+
+let toastTimer;
+function toast(text) {
+  const t = document.getElementById('toast');
+  t.textContent = text; t.hidden = false;
+  clearTimeout(toastTimer);
+  toastTimer = setTimeout(() => { t.hidden = true; }, 4000);
+}
+
+
+/* ---------- подсветка кода и разметка условий ---------- */
+const KEYWORDS = new Set('if elif else while for in and or not break continue True False None def return import from as pass is'.split(' '));
+const BUILTINS = new Set('print input len str int float range type bool list'.split(' '));
+const TOKEN_RE = /(#[^\n]*)|("""[\s\S]*?(?:"""|$)|\'\'\'[\s\S]*?(?:\'\'\'|$))|('(?:\\.|[^'\\\n])*'?|"(?:\\.|[^"\\\n])*"?)|(\d+(?:\.\d+)?)|([A-Za-z_\u0400-\u04FF][\w\u0400-\u04FF]*)|(\*\*|\/\/|[+\-*\/%=<>!]=?|[()\[\]{},:.])/g;
+function esc(t) { return t.replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;'); }
+function highlight(code) {
+  let out = '', last = 0, m;
+  TOKEN_RE.lastIndex = 0;
+  while ((m = TOKEN_RE.exec(code)) !== null) {
+    out += esc(code.slice(last, m.index));
+    const t = m[0];
+    let cls = '';
+    if (m[1]) cls = 'tk-cm';
+    else if (m[2] || m[3]) cls = 'tk-str';
+    else if (m[4]) cls = 'tk-num';
+    else if (m[5]) {
+      if (KEYWORDS.has(t)) cls = 'tk-kw';
+      else if (BUILTINS.has(t)) cls = 'tk-bi';
+      else if (code[m.index + t.length] === '(') cls = 'tk-fn';
+    } else if (m[6]) cls = 'tk-op';
+    out += cls ? `<span class="${cls}">${esc(t)}</span>` : esc(t);
+    last = m.index + t.length;
+    if (t.length === 0) TOKEN_RE.lastIndex++;
+  }
+  return out + esc(code.slice(last));
+}
+function highlightExample(text) {
+  const lines = text.split('\n');
+  const legacy = lines.some(l => l.startsWith('>>> '));
+  return lines.map(l => {
+    if (legacy) {
+      if (l.startsWith('>>> ') || l.startsWith('... ')) return '<span class="tk-pr">' + esc(l.slice(0, 4)) + '</span>' + highlight(l.slice(4));
+      return '<span class="tk-ar">→ </span><span class="tk-ans">' + highlight(l) + '</span>';
+    }
+    if (l.startsWith('→ ') || l === '→') return '<span class="tk-ar">→ </span><span class="tk-ans">' + esc(l.slice(2)) + '</span>';
+    if (l.startsWith('| ') || l === '|') return '<span class="tk-ready">🔒 ' + highlight(l.slice(2)) + '</span>';
+    return highlight(l);
+  }).join('\n');
+}
+function highlightConsole(text) {
+  return text.split('\n').map(l => l.startsWith('>>> ') ? '<span class="tk-pr">&gt;&gt;&gt; </span>' + highlight(l.slice(4)) : highlight(l)).join('\n');
+}
+/* разметка условия: `код`, **жирный**, __подчёркнутый__, ==выделенный==, подписи «Что дано:» и т.п. */
+function fmt(text) {
+  const out = [];
+  for (const line of text.split('\n')) {
+    const lm = line.match(/^(Что сделать|Что должно получиться|Что дано|Что нужно[^:]*|Ограничение|Где смотреть|Готовая часть|Зачем это нужно|Что получится в итоге|Важно):/);
+    const rest = lm ? line.slice(lm[0].length) : line;
+    if (lm) out.push(el('span', { class: 'label' }, lm[0]));
+    let pos = 0, m;
+    const re = /`([^`]+)`|\*\*([^*]+)\*\*|__([^_]+)__|==([^=]+)==/g;
+    while ((m = re.exec(rest)) !== null) {
+      if (m.index > pos) out.push(rest.slice(pos, m.index));
+      if (m[1] !== undefined) out.push(el('code', {}, m[1]));
+      else if (m[2] !== undefined) out.push(el('b', {}, m[2]));
+      else if (m[3] !== undefined) out.push(el('u', {}, m[3]));
+      else out.push(el('mark', {}, m[4]));
+      pos = m.index + m[0].length;
+    }
+    out.push(rest.slice(pos));
+    out.push('\n');
+  }
+  out.pop();
+  return out;
+}
+
+/* ---------- список заданий ---------- */
+async function loadList() {
+  tasks = (await api('/api/tasks')).tasks;
+  const nav = document.getElementById('list');
+  nav.replaceChildren();
+  if (!tasks.length) nav.append(el('div', { class: 'none' }, 'Заданий пока нет. Файлы заданий лежат в папке «Тестовые задания/Задания».'));
+  for (const t of tasks) {
+    const sub = t.error ? 'не удалось прочитать файл' : (t.passed ? 'пройдено ✓' : `решено ${t.solved} из ${t.total}`);
+    nav.append(el('button', { class: t.passed ? 'done' : '', 'aria-current': t.id === curId ? 'true' : 'false',
+        onclick: () => t.error ? toast('Файл «' + t.id + '.json»: ' + t.error) : openTask(t.id) },
+      el('span', { class: 'name' }, t.title), el('span', { class: 'sub' }, sub)));
+  }
+}
+
+async function openTask(id) {
+  curId = id;
+  current = await api('/api/task?id=' + encodeURIComponent(id));
+  await loadList();
+  render();
+}
+
+function firstUnsolved() {
+  for (let i = 0; i < current.questions.length; i++) if (current.solved[i] === undefined) return i;
+  return -1;
+}
+
+function renderEmpty() {
+  document.getElementById('main').replaceChildren(el('div', { class: 'wrap' },
+    el('div', { class: 'empty' }, el('h2', {}, 'Выбери задание слева'),
+      el('p', {}, 'Здесь ты пишешь код и сразу видишь, что он выводит.'))));
+}
+
+/* ---------- экран задания ---------- */
+function render() {
+  if (!current) return renderEmpty();
+  const total = current.questions.length;
+  const idx = firstUnsolved();
+  const wrap = el('div', { class: 'wrap' });
+
+  const dots = el('div', { class: 'steps' });
+  for (let i = 0; i < total; i++) dots.append(el('span', { class: 'dot ' + (current.solved[i] !== undefined ? 'done' : (i === idx ? 'now' : '')) }));
+  dots.append(el('span', { class: 'txt' }, idx === -1 ? `Решено ${total} из ${total}` : `Задача ${idx + 1} из ${total}`));
+
+  wrap.append(el('div', { class: 'head' },
+    el('div', {}, current.topic ? el('div', { class: 'topic' }, current.topic) : null, el('h1', {}, current.title)), dots));
+
+  if (idx === -1) {
+    wrap.append(el('div', { class: 'done-box' }, el('h2', {}, 'Задание пройдено'),
+      el('p', {}, 'Все задачи решены. Результат записан в папку результатов: в меню «Ещё» есть пункт «Открыть папку результатов».')));
+  } else {
+    wrap.append(...workArea(idx));
+  }
+  document.getElementById('main').replaceChildren(wrap);
+  const f = document.getElementById('answer');
+  if (f) f.focus();
+}
+
+function workArea(idx) {
+  const q = current.questions[idx];
+  const isScript = q.type === 'script';
+  const isCode = q.type === 'code' || q.type === 'shell' || isScript;
+
+  const task = el('div', { class: 'task' }, el('div', { class: 'lab' }, 'Условие'), el('p', {}, ...fmt(q.text)));
+  const tabs = [];
+  const about = q.about || current.intro;
+  if (about || current.general) tabs.push(['О задании', () => [
+    about ? el('div', { class: 'sec' }, el('h4', {}, 'Об этой задаче'), el('p', {}, ...fmt(about))) : null,
+    current.general ? el('div', { class: 'sec' }, el('h4', {}, 'Как отвечать'), el('p', {}, ...fmt(current.general))) : null,
+  ].filter(Boolean)]);
+  if (current.help && current.help.length) tabs.push(['Справка', () => current.help.map(x =>
+    el('div', { class: 'sec' }, el('h4', {}, ...fmt(x.h)), x.t ? el('p', {}, ...fmt(x.t)) : null, x.code ? (() => { const pr = el('pre', {}); pr.innerHTML = highlightExample(x.code); return pr; })() : null))]);
+  if (tabs.length) {
+    const bar = el('div', { class: 'tabs' }), body = el('div', { hidden: true });
+    let open = null;
+    tabs.forEach(([name, make], i) => {
+      const b = el('button', { class: 'tab', 'aria-expanded': 'false' }, name);
+      b.addEventListener('click', () => {
+        const same = open === i;
+        bar.querySelectorAll('.tab').forEach(x => x.setAttribute('aria-expanded', 'false'));
+        open = same ? null : i;
+        body.hidden = same;
+        if (!same) { b.setAttribute('aria-expanded', 'true'); body.replaceChildren(el('div', { class: 'panel' }, ...make())); }
+      });
+      bar.append(b);
+    });
+    task.append(bar, body);
+    if (idx === 0) {
+      const hi = tabs.findIndex(t => t[0] === 'Справка');
+      if (hi >= 0) bar.querySelectorAll('.tab')[hi].click();
+    }
+  }
+
+  const gutter = el('div', { class: 'gutter' }, isCode ? '1' : '>>>');
+  const field = el('textarea', { id: 'answer', spellcheck: 'false', autocomplete: 'off', wrap: 'off',
+    rows: isScript ? (q.min_lines || 3) : (isCode ? 9 : 2), 'aria-label': isCode ? 'Код' : 'Выражение',
+    placeholder: q.placeholder || (isCode ? (q.type === 'shell' ? 'Напиши команды, каждую с новой строки' : 'Напиши код здесь') : 'Запиши выражение, а не готовый результат') });
+  if (isCode && q.starter) field.value = q.starter;
+  const hl = el('pre', { class: 'hl', 'aria-hidden': 'true' });
+  const nums = (from, n) => Array.from({ length: n }, (_, i) => from + i).join('\n');
+  const beforeLines = isScript && q.before ? q.before.replace(/\n+$/, '').split('\n').length : 0;
+  const minLines = isScript ? (q.min_lines || 3) : 9;
+  let gutterAfter = null;
+  let editor;
+  if (isScript) {
+    const parts = [];
+    if (q.before) {
+      const g = el('div', { class: 'gutter' }, nums(1, beforeLines));
+      const pre = el('pre', { class: 'ro' }); pre.innerHTML = highlight(q.before.replace(/\n+$/, ''));
+      parts.push(el('div', { class: 'ready-note' }, '🔒 Готовая часть. Её менять нельзя.'), el('div', { class: 'part ready top' }, g, pre));
+    }
+    gutter.textContent = nums(beforeLines + 1, minLines);
+    parts.push(el('div', { class: 'part mine' }, gutter, el('div', { class: 'code' }, hl, field)));
+    if (q.after) {
+      gutterAfter = el('div', { class: 'gutter' }, '');
+      const pre = el('pre', { class: 'ro' }); pre.innerHTML = highlight(q.after.replace(/\n+$/, ''));
+      parts.push(el('div', { class: 'ready-note bottom' }, '🔒 Готовая часть. Её менять нельзя: она показывает результат в консоли.'),
+        el('div', { class: 'part ready bottom' }, gutterAfter, pre));
+    }
+    editor = el('div', { class: 'editor script' }, ...parts);
+  } else {
+    editor = el('div', { class: 'editor' }, gutter, el('div', { class: 'code' }, hl, field));
+  }
+  const afterLines = isScript && q.after ? q.after.replace(/\n+$/, '').split('\n').length : 0;
+
+  function gutterUpdate() {
+    hl.innerHTML = highlight(field.value) + '\n';
+    hl.scrollTop = field.scrollTop; hl.scrollLeft = field.scrollLeft;
+    if (!isCode) return;
+    const n = Math.max(field.value.split('\n').length, minLines);
+    if (isScript) {
+      field.rows = n;
+      gutter.textContent = nums(beforeLines + 1, n);
+      if (gutterAfter) gutterAfter.textContent = nums(beforeLines + n + 1, afterLines);
+      return;
+    }
+    gutter.textContent = nums(1, n);
+    gutter.scrollTop = field.scrollTop;
+  }
+  field.addEventListener('input', gutterUpdate);
+  field.addEventListener('scroll', () => { hl.scrollTop = field.scrollTop; hl.scrollLeft = field.scrollLeft; gutter.scrollTop = field.scrollTop; });
+  gutterUpdate();
+
+  const runBtn = el('button', { class: 'btn', id: 'run' }, '▶ Запустить');
+  const checkBtn = el('button', { class: 'btn primary', id: 'check' }, '✓ Проверить');
+  const nextBtn = el('button', { class: 'btn primary', hidden: true, onclick: render }, 'Дальше');
+  const keys = el('span', { class: 'keys' }, isCode ? 'Ctrl + Enter: запустить' : 'Enter: запустить');
+
+  const modeLabel = el('span', {}, '');
+  const out = el('pre', { class: 'empty' }, 'Здесь появится результат. Нажми «Запустить», чтобы посмотреть, что получается, или «Проверить», чтобы сдать задачу.');
+  const verdict = el('div', { class: 'verdict', hidden: true });
+  const con = el('div', { class: 'console' }, el('div', { class: 'bar' }, el('span', {}, 'Консоль'), modeLabel), out, verdict);
+
+  function show(text, isErr, mode) {
+    out.className = isErr ? 'err' : 'hlc';
+    if (isErr || !text.startsWith('>>> ')) out.textContent = text; else out.innerHTML = highlightConsole(text);
+    modeLabel.textContent = mode;
+  }
+
+  async function run() {
+    if (runBtn.disabled) return;
+    runBtn.disabled = true;
+    verdict.hidden = true;
+    try {
+      const r = await api('/api/run', { id: current.id, index: idx, answer: field.value });
+      show(r.console, r.error, 'запуск');
+    } catch (e) { show(e.message, true, 'ошибка'); }
+    finally { runBtn.disabled = false; }
+  }
+
+  async function check() {
+    if (checkBtn.disabled) return;
+    checkBtn.disabled = true;
+    try {
+      const r = await api('/api/check', { id: current.id, index: idx, answer: field.value });
+      let text = r.console ?? (r.output !== undefined ? (r.output === '' ? '(программа ничего не вывела)' : r.output) : '');
+      if (text) show(text, !!r.console_error, 'проверка'); else { out.className = 'empty'; out.textContent = 'Нет вывода.'; modeLabel.textContent = 'проверка'; }
+      verdict.hidden = false;
+      verdict.className = 'verdict ' + (r.ok ? 'ok' : 'bad');
+      verdict.replaceChildren(...[r.message, r.hint ? el('span', { class: 'more' }, r.hint) : null].filter(Boolean));
+      if (r.ok) {
+        current.solved[idx] = r.attempts || 1;
+        field.readOnly = true; runBtn.hidden = true; checkBtn.hidden = true; keys.hidden = true;
+        nextBtn.hidden = false; nextBtn.textContent = r.finished ? 'Завершить' : 'Дальше';
+        nextBtn.focus();
+        loadList();
+      }
+    } catch (e) {
+      verdict.hidden = false; verdict.className = 'verdict bad'; verdict.textContent = e.message;
+    } finally { checkBtn.disabled = false; }
+  }
+
+  runBtn.addEventListener('click', run);
+  checkBtn.addEventListener('click', check);
+  field.addEventListener('keydown', (ev) => {
+    if (ev.key === 'Enter' && (!isCode || ev.ctrlKey || ev.metaKey)) { ev.preventDefault(); run(); }
+    if (isCode && ev.key === 'Tab') {
+      ev.preventDefault();
+      const s = field.selectionStart, e = field.selectionEnd;
+      field.value = field.value.slice(0, s) + '    ' + field.value.slice(e);
+      field.selectionStart = field.selectionEnd = s + 4;
+      gutterUpdate();
+    }
+  });
+
+  return [task, editor, el('div', { class: 'toolbar' }, runBtn, checkBtn, nextBtn, keys), con];
+}
+
+/* ---------- меню «Ещё» ---------- */
+async function openSystem(what) {
+  try {
+    const r = await api('/api/open', { what, id: curId });
+    if (!r.ok) toast(r.message || 'Не удалось открыть');
+  } catch (e) { toast(e.message); }
+}
+document.getElementById('m-log').addEventListener('click', () => openSystem('log'));
+document.getElementById('m-res').addEventListener('click', () => openSystem('results'));
+document.getElementById('m-reset').addEventListener('click', async () => {
+  if (!curId) return toast('Сначала выбери задание');
+  if (!confirm('Начать задание заново? Весь прогресс по нему сбросится (лог останется).')) return;
+  try { await api('/api/reset', { id: curId }); await openTask(curId); } catch (e) { toast(e.message); }
+});
+document.getElementById('m-refresh').addEventListener('click', async () => {
+  try { await loadList(); if (curId && tasks.some(t => t.id === curId && !t.error)) await openTask(curId); }
+  catch (e) { toast(e.message); }
+});
+document.getElementById('m-add').addEventListener('click', () => document.getElementById('file').click());
+document.getElementById('file').addEventListener('change', async (ev) => {
+  const files = [...ev.target.files];
+  ev.target.value = '';
+  if (!files.length) return;
+  let last = null; const problems = [];
+  for (const f of files) {
+    try { last = (await api('/api/import', { name: f.name, content: await f.text() })).id; }
+    catch (e) { problems.push(f.name + ': ' + e.message); }
+  }
+  if (last) {
+    toast(files.length - problems.length === 1 ? 'Задание добавлено' : `Добавлено заданий: ${files.length - problems.length}`);
+    await openTask(last);
+  }
+  if (problems.length) toast('Не получилось добавить: ' + problems.join('; '));
+});
+
+/* ---------- сигнал «окно открыто» ---------- */
+async function ping() { try { await api('/api/ping', {}); } catch (e) { /* программа остановлена */ } }
+setInterval(ping, 5000);
+ping();
+window.addEventListener('focus', () => { loadList().catch(() => {}); });
+
+loadList().then(renderEmpty).catch((e) => toast(e.message));
+</script>
+</body>
+</html>

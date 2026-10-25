@@ -1,0 +1,44 @@
+# Builds a single Windows .exe with PyInstaller.
+# Run it by hand: Actions -> "Build exe" -> Run workflow (the .exe appears under "Artifacts").
+# Or push a tag such as v1.0 and the .exe is attached to the GitHub Release.
+name: Build exe
+
+on:
+  workflow_dispatch:
+  push:
+    tags: ["v*"]
+
+permissions:
+  contents: write
+
+jobs:
+  build:
+    runs-on: windows-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+      - name: Install PyInstaller
+        run: python -m pip install pyinstaller
+      - name: Build
+        shell: bash
+        working-directory: app
+        run: |
+          python -m PyInstaller --noconfirm --onefile --noconsole --name PracticePython \
+            --distpath ../dist \
+            --add-data "интерфейс.html;." --add-data "../Задания;Задания" \
+            --hidden-import random --hidden-import math --hidden-import datetime --hidden-import string \
+            --hidden-import collections --hidden-import itertools --hidden-import functools --hidden-import statistics \
+            --hidden-import json --hidden-import re --hidden-import time --hidden-import decimal --hidden-import fractions \
+            --hidden-import textwrap --hidden-import calendar \
+            "программа.py"
+      - uses: actions/upload-artifact@v4
+        with:
+          name: PracticePython
+          path: dist/PracticePython.exe
+      - name: Attach to release (tags only)
+        if: startsWith(github.ref, 'refs/tags/')
+        uses: softprops/action-gh-release@v2
+        with:
+          files: dist/PracticePython.exe

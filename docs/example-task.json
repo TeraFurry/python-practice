@@ -1,0 +1,32 @@
+{
+  "title": "Greeting example",
+  "topic": "Example",
+  "general": "Write your code in the field. Grey lines with a lock are fixed. Press Run to see the result and Check to submit.",
+  "help": [
+    {
+      "h": "Lesson: variables",
+      "t": "A **variable** is a box with a name. The sign `=` means \"put into the box\": the name is on the left, the value on the right.",
+      "code": "name = 'Anna'    # put the text 'Anna' into the box name"
+    }
+  ],
+  "questions": [
+    {
+      "type": "script",
+      "text": "**What to do:** save the text `Anna` in the variable `name`.\n**Expected result:** the console shows `Anna`.\n**Where to look:** Help, \"Lesson\".",
+      "about": "Practice: storing a value in a variable.",
+      "after": "print(name)",
+      "expected_output": "Anna",
+      "assigns": ["name"],
+      "consts": {"name": "Anna"}
+    },
+    {
+      "type": "script",
+      "text": "**What to do:** in the field there is a line that prints `Hello`. Change it so the console shows `Hello, Anna`.\n**Expected result:** the console shows `Hello, Anna`.\n**Where to look:** Help, \"Lesson\".",
+      "about": "Practice: fixing a ready line.",
+      "starter": "greeting = 'Hello'",
+      "after": "print(greeting)",
+      "expected_output": "Hello, Anna",
+      "assigns": ["greeting"]
+    }
+  ]
+}
